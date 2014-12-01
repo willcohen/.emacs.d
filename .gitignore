@@ -1,5 +1,9 @@
 auto-save-list
 elpa
 url
+server
 .DS_Store
 ac-comphist.dat
+ido.last
+*~
+*#
