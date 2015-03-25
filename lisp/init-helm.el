@@ -1,4 +1,5 @@
 (require-package 'helm)
+(require-package 'helm-projectile)
 
 ;;; HELM
 
@@ -55,5 +56,13 @@
 
 ;;; Helm - Open in Finder / Explorer
 (when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
+
+;;; Helm Projectile
+
+(projectile-global-mode)
+(setq projectile-completion-system 'helm)
+(helm-projectile-on)
+
+
 
 (provide 'init-helm)

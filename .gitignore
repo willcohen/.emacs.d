@@ -9,5 +9,7 @@ tramp
 eshell
 .deft
 recentf
+projectile-bookmarks.eld
+projectile.cache
 *~
 *#
