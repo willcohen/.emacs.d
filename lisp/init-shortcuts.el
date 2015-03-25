@@ -3,7 +3,7 @@
 
 ;;; Turn on time-stamp updating. Timestamp must be in first 8 lines of
 ;;;   file and look like:
-;;;   Time-stamp: <2015-03-25 00:55:13 wcohen>
+;;;   Time-stamp: <2015-03-25 13:28:59 wcohen>
 (add-hook 'write-file-hooks 'time-stamp)
 
 ;;; Get current system's name
@@ -52,7 +52,7 @@
 ;; (add-hook 'prog-mode-hook 'guru-mode)
 
 ;; To get warnings only for arrow keys
-;; (setq guru-warn only t)
+(setq guru-warn-only t)
 
 ;;; Deft (for notes)
 (require 'deft)

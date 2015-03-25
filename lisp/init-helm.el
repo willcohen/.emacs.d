@@ -50,4 +50,10 @@
 (setq helm-buffers-fuzzy-matching t
       helm-recentf-fuzzy-match    t)
 
+;;; Helm-locate needs to identify es.exe on Windows
+(when *is-windows* (add-to-list 'load-path "~/bin"))
+
+;;; Helm - Open in Finder / Explorer
+(when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
+
 (provide 'init-helm)
