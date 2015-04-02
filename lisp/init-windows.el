@@ -85,6 +85,14 @@
 (global-set-key "\C-x_" 'split-window-vertically-instead)
 
 
+;; Next window and previous window
+
+(defun prev-window ()
+  (interactive)
+  (other-window -1))
+
+(define-key global-map (kbd "C-x p") 'prev-window)
+
 ;; Borrowed from http://postmomentum.ch/blog/201304/blog-on-emacs
 (defun sanityinc/split-window()
   "Split the window to see the most recent buffer in the other window.
