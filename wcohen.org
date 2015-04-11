@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-11 19:47:58 wcohen>
+# Time-stamp: <2015-04-11 19:51:42 wcohen>
 
 * Configuration
 ** About this file
@@ -8,7 +8,7 @@
 
 Org-babel file for Emacs configuration, inspired by [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]].
 
-Within org-mode, open source blocks with =C-c '= (=org-edit-special=).
+Within org-mode, open source blocks with =C-c \'= (=org-edit-special=).
 
 ** Emacs installation
 
