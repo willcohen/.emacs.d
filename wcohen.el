@@ -162,20 +162,22 @@ locate PACKAGE."
 (require-package 'cl-lib)
 (require 'cl-lib)
 
-(defun sanityinc/set-tabulated-list-column-width (col-name width)
+(defun wc/set-tabulated-list-column-width (col-name width)
   "Set any column with name COL-NAME to the given WIDTH."
   (cl-loop for column across tabulated-list-format
            when (string= col-name (car column))
            do (setf (elt column 1) width)))
 
-(defun sanityinc/maybe-widen-package-menu-columns ()
+(defun wc/maybe-widen-package-menu-columns ()
   "Widen some columns of the package menu table to avoid truncation."
   (when (boundp 'tabulated-list-format)
-    (sanityinc/set-tabulated-list-column-width "Version" 13)
+    (wc/set-tabulated-list-column-width "Version" 13)
     (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
-      (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
+      (wc/set-tabulated-list-column-width "Archive" longest-archive-name))))
 
-(add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
+(add-hook 'package-menu-mode-hook 'wc/maybe-widen-package-menu-columns)
+
+(require-package 'bind-key)
 
 (when *is-mac* (require-package 'exec-path-from-shell))
 
@@ -196,12 +198,12 @@ locate PACKAGE."
 ;;----------------------------------------------------------------------------
 ;; Stop C-z from minimizing windows under OS X
 ;;----------------------------------------------------------------------------
-(defun sanityinc/maybe-suspend-frame ()
+(defun wc/maybe-suspend-frame ()
   (interactive)
   (unless (and *is-mac* window-system)
     (suspend-frame)))
 
-(global-set-key (kbd "C-z") 'sanityinc/maybe-suspend-frame)
+(global-set-key (kbd "C-z") 'wc/maybe-suspend-frame)
 
 
 ;;----------------------------------------------------------------------------
@@ -231,7 +233,7 @@ locate PACKAGE."
   (add-to-list 'default-frame-alist no-border)
   (add-to-list 'initial-frame-alist no-border))
 
-(defun sanityinc/adjust-opacity (frame incr)
+(defun wc/adjust-opacity (frame incr)
   "Adjust the background opacity of FRAME by increment INCR."
   (unless (display-graphic-p frame)
     (error "Cannot adjust opacity of this frame"))
@@ -250,8 +252,8 @@ locate PACKAGE."
   (global-set-key (kbd "M-s-ƒ") 'toggle-frame-fullscreen))
 
 ;; TODO: use seethru package instead?
-(global-set-key (kbd "M-C-8") (lambda () (interactive) (sanityinc/adjust-opacity nil -2)))
-(global-set-key (kbd "M-C-9") (lambda () (interactive) (sanityinc/adjust-opacity nil 2)))
+(global-set-key (kbd "M-C-8") (lambda () (interactive) (wc/adjust-opacity nil -2)))
+(global-set-key (kbd "M-C-9") (lambda () (interactive) (wc/adjust-opacity nil 2)))
 (global-set-key (kbd "M-C-0") (lambda () (interactive) (modify-frame-parameters nil `((alpha . 100)))))
 
 (add-hook 'after-make-frame-functions
@@ -421,7 +423,7 @@ with a Windows external keyboard from time to time."
 
 ;;; Whitespace
 
-(defun sanityinc/no-trailing-whitespace ()
+(defun wc/no-trailing-whitespace ()
   "Turn off display of trailing whitespace in this buffer."
   (setq show-trailing-whitespace nil))
 
@@ -434,7 +436,7 @@ with a Windows external keyboard from time to time."
                 compilation-mode-hook
                 twittering-mode-hook
                 minibuffer-setup-hook))
-  (add-hook hook #'sanityinc/no-trailing-whitespace))
+  (add-hook hook #'wc/no-trailing-whitespace))
 
 
 (require-package 'whitespace-cleanup-mode)
@@ -445,13 +447,13 @@ with a Windows external keyboard from time to time."
 ;;; Newline behaviour
 
 (global-set-key (kbd "RET") 'newline-and-indent)
-(defun sanityinc/newline-at-end-of-line ()
+(defun wc/newline-at-end-of-line ()
   "Move to end of line, enter a newline, and reindent."
   (interactive)
   (move-end-of-line 1)
   (newline-and-indent))
 
-(global-set-key (kbd "S-<return>") 'sanityinc/newline-at-end-of-line)
+(global-set-key (kbd "S-<return>") 'wc/newline-at-end-of-line)
 
 
 
@@ -478,7 +480,7 @@ with a Windows external keyboard from time to time."
 (add-hook 'org-mode-hook 'highlight-symbol-nav-mode)
 (after-load 'highlight-symbol
   (diminish 'highlight-symbol-mode)
-  (defadvice highlight-symbol-temp-highlight (around sanityinc/maybe-suppress activate)
+  (defadvice highlight-symbol-temp-highlight (around wc/maybe-suppress activate)
     "Suppress symbol highlighting while isearching."
     (unless isearch-mode ad-do-it)))
 
@@ -587,36 +589,36 @@ with a Windows external keyboard from time to time."
 ;;----------------------------------------------------------------------------
 (when (eval-when-compile (> emacs-major-version 23))
   (require-package 'fill-column-indicator)
-  (defun sanityinc/prog-mode-fci-settings ()
+  (defun wc/prog-mode-fci-settings ()
     (turn-on-fci-mode)
     (when show-trailing-whitespace
       (set (make-local-variable 'whitespace-style) '(face trailing))
       (whitespace-mode 1)))
 
-  ;;(add-hook 'prog-mode-hook 'sanityinc/prog-mode-fci-settings)
+  ;;(add-hook 'prog-mode-hook 'wc/prog-mode-fci-settings)
 
-  (defun sanityinc/fci-enabled-p ()
+  (defun wc/fci-enabled-p ()
     (and (boundp 'fci-mode) fci-mode))
 
-  (defvar sanityinc/fci-mode-suppressed nil)
+  (defvar wc/fci-mode-suppressed nil)
   (defadvice popup-create (before suppress-fci-mode activate)
     "Suspend fci-mode while popups are visible"
-    (let ((fci-enabled (sanityinc/fci-enabled-p)))
+    (let ((fci-enabled (wc/fci-enabled-p)))
       (when fci-enabled
-        (set (make-local-variable 'sanityinc/fci-mode-suppressed) fci-enabled)
+        (set (make-local-variable 'wc/fci-mode-suppressed) fci-enabled)
         (turn-off-fci-mode))))
   (defadvice popup-delete (after restore-fci-mode activate)
     "Restore fci-mode when all popups have closed"
-    (when (and sanityinc/fci-mode-suppressed
+    (when (and wc/fci-mode-suppressed
                (null popup-instances))
-      (setq sanityinc/fci-mode-suppressed nil)
+      (setq wc/fci-mode-suppressed nil)
       (turn-on-fci-mode)))
 
   ;; Regenerate fci-mode line images after switching themes
   (defadvice enable-theme (after recompute-fci-face activate)
     (dolist (buffer (buffer-list))
       (with-current-buffer buffer
-        (when (sanityinc/fci-enabled-p)
+        (when (wc/fci-enabled-p)
           (turn-on-fci-mode))))))
 
 
@@ -678,7 +680,7 @@ with a Windows external keyboard from time to time."
 
 
 
-(defun sanityinc/open-line-with-reindent (n)
+(defun wc/open-line-with-reindent (n)
   "A version of `open-line' which reindents the start and end positions.
 If there is a fill prefix and/or a `left-margin', insert them
 on the new line if the line would have been blank.
@@ -705,7 +707,7 @@ With arg N, insert N newlines."
     (end-of-line)
     (indent-according-to-mode)))
 
-(global-set-key (kbd "C-o") 'sanityinc/open-line-with-reindent)
+(global-set-key (kbd "C-o") 'wc/open-line-with-reindent)
 
 
 ;;----------------------------------------------------------------------------
@@ -898,6 +900,73 @@ With arg N, insert N newlines."
 (setq projectile-completion-system 'helm)
 (helm-projectile-on)
 
+(setq org-modules '(org-bbdb
+                    org-gnus
+                    org-drill
+                    org-info
+                    org-jsinfo
+                    org-habit
+                    org-irc
+                    org-mouse
+                    org-annotate-file
+                    org-eval
+                    org-expiry
+                    org-interactive-query
+                    org-man
+                    org-collector
+                    org-panel
+                    org-screen
+                    org-toc))
+(eval-after-load 'org
+  '(org-load-modules-maybe t))
+(setq org-expiry-inactive-timestamps t)
+
+(bind-key "C-c r" 'org-capture)
+(bind-key "C-c a" 'org-agenda)
+(bind-key "C-c l" 'org-store-link)
+(bind-key "C-c L" 'org-insert-link-global)
+(bind-key "C-c O" 'org-open-at-point-global)
+(bind-key "<f9> <f9>" 'org-agenda-list)
+(bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
+(bind-key "C-TAB" 'org-cycle org-mode-map)
+(bind-key "C-c v" 'org-show-todo-tree org-mode-map)
+(bind-key "C-c C-r" 'org-refile org-mode-map)
+(bind-key "C-c R" 'org-reveal org-mode-map)
+
+(eval-after-load 'org
+  '(bind-key "C-M-w" 'append-next-kill org-mode-map))
+
+(eval-after-load 'org-agenda
+  '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
+
+(setq org-use-effective-time t)
+
+(defun wc/org-use-speed-commands-for-headings-and-lists ()
+  "Activate speed commands on list items too."
+  (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+      (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+(setq org-use-speed-commands 'wc/org-use-speed-commands-for-headings-and-lists)
+
+(add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
+(add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
+(add-to-list 'org-speed-commands-user '("!" wc/org-clock-in-and-track))
+(add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
+(add-to-list 'org-speed-commands-user '("d" wc/org-move-line-to-destination))
+(add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
+(add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
+(add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
+(bind-key "!" 'wc/org-clock-in-and-track org-agenda-mode-map)
+
+(setq org-directory "~/personal")
+(setq org-default-notes-file "~/personal/organizer.org")
+
+(defun wc/yank-more ()
+  (interactive)
+  (insert "[[")
+  (yank)
+  (insert "][more]]"))
+(global-set-key (kbd "<f6>") 'wc/yank-more)
+
 (setq org-structure-template-alist
       '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
         ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
@@ -947,11 +1016,11 @@ With arg N, insert N newlines."
                 js2-mode-show-strict-warnings nil)
   ;; ... but enable it if flycheck can't handle javascript
   (autoload 'flycheck-get-checker-for-buffer "flycheck")
-  (defun sanityinc/disable-js2-checks-if-flycheck-active ()
+  (defun wc/disable-js2-checks-if-flycheck-active ()
     (unless (flycheck-get-checker-for-buffer)
       (set (make-local-variable 'js2-mode-show-parse-errors) t)
       (set (make-local-variable 'js2-mode-show-strict-warnings) t)))
-  (add-hook 'js2-mode-hook 'sanityinc/disable-js2-checks-if-flycheck-active)
+  (add-hook 'js2-mode-hook 'wc/disable-js2-checks-if-flycheck-active)
 
   (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
 
@@ -1153,10 +1222,10 @@ With arg N, insert N newlines."
 
 (require-package 'magit-svn)
 (autoload 'magit-svn-enabled "magit-svn")
-(defun sanityinc/maybe-enable-magit-svn-mode ()
+(defun wc/maybe-enable-magit-svn-mode ()
   (when (magit-svn-enabled)
     (magit-svn-mode)))
-(add-hook 'magit-status-mode-hook #'sanityinc/maybe-enable-magit-svn-mode)
+(add-hook 'magit-status-mode-hook #'wc/maybe-enable-magit-svn-mode)
 
 (after-load 'compile
   (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
@@ -1168,7 +1237,7 @@ With arg N, insert N newlines."
 (defun git-svn--available-commands ()
   (or git-svn--available-commands
       (setq git-svn--available-commands
-            (sanityinc/string-all-matches
+            (wc/string-all-matches
              "^  \\([a-z\\-]+\\) +"
              (shell-command-to-string "git svn help") 1))))
 
@@ -1260,7 +1329,7 @@ With arg N, insert N newlines."
 (global-set-key "\C-x2" (split-window-func-with-other-buffer 'split-window-vertically))
 (global-set-key "\C-x3" (split-window-func-with-other-buffer 'split-window-horizontally))
 
-(defun sanityinc/toggle-delete-other-windows ()
+(defun wc/toggle-delete-other-windows ()
   "Delete other windows in frame if any, or restore previous window config."
   (interactive)
   (if (and winner-mode
@@ -1268,7 +1337,7 @@ With arg N, insert N newlines."
       (winner-undo)
     (delete-other-windows)))
 
-(global-set-key "\C-x1" 'sanityinc/toggle-delete-other-windows)
+(global-set-key "\C-x1" 'wc/toggle-delete-other-windows)
 
 ;;----------------------------------------------------------------------------
 ;; Rearrange split windows
@@ -1298,18 +1367,18 @@ With arg N, insert N newlines."
 (define-key global-map (kbd "C-x p") 'prev-window)
 
 ;; Borrowed from http://postmomentum.ch/blog/201304/blog-on-emacs
-(defun sanityinc/split-window()
+(defun wc/split-window()
   "Split the window to see the most recent buffer in the other window.
 Call a second time to restore the original window configuration."
   (interactive)
-  (if (eq last-command 'sanityinc/split-window)
+  (if (eq last-command 'wc/split-window)
       (progn
-        (jump-to-register :sanityinc/split-window)
-        (setq this-command 'sanityinc/unsplit-window))
-    (window-configuration-to-register :sanityinc/split-window)
+        (jump-to-register :wc/split-window)
+        (setq this-command 'wc/unsplit-window))
+    (window-configuration-to-register :wc/split-window)
     (switch-to-buffer-other-window nil)))
 
-(global-set-key (kbd "<f7>") 'sanityinc/split-window)
+(global-set-key (kbd "<f7>") 'wc/split-window)
 (global-set-key (kbd "<f6>")
                 (lambda ()
                   (interactive)
@@ -1388,16 +1457,16 @@ Call a second time to restore the original window configuration."
 (when (file-exists-p custom-file)
   (load custom-file))
 
-(defun sanityinc/utf8-locale-p (v)
+(defun wc/utf8-locale-p (v)
   "Return whether locale string V relates to a UTF-8 locale."
   (and v (string-match "UTF-8" v)))
 
 (defun locale-is-utf8-p ()
   "Return t iff the \"locale\" command or environment variables prefer UTF-8."
-  (or (sanityinc/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
-      (sanityinc/utf8-locale-p (getenv "LC_ALL"))
-      (sanityinc/utf8-locale-p (getenv "LC_CTYPE"))
-      (sanityinc/utf8-locale-p (getenv "LANG"))))
+  (or (wc/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
+      (wc/utf8-locale-p (getenv "LC_ALL"))
+      (wc/utf8-locale-p (getenv "LC_CTYPE"))
+      (wc/utf8-locale-p (getenv "LANG"))))
 
 (when (or window-system (locale-is-utf8-p))
   (setq utf-translate-cjk-mode nil) ; disable CJK coding/encoding (Chinese/Japanese/Korean characters)

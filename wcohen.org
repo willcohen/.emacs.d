@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-12 03:06:01 wcohen>
+# Time-stamp: <2015-04-12 07:34:17 wcohen>
 
 * Configuration
 ** About this file
@@ -254,6 +254,14 @@ locate PACKAGE."
 
 (add-hook 'package-menu-mode-hook 'wc/maybe-widen-package-menu-columns)
 
+
+#+end_src
+
+Add support for bind-key.
+
+#+begin_src emacs-lisp
+
+(require-package 'bind-key)
 
 #+end_src
 
@@ -1097,6 +1105,118 @@ On my desktop
 
 
 *** Org
+
+See [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]] for org info.
+
+
+**** Modules
+
+Modules that are being used for org.
+
+#+begin_src emacs-lisp
+  (setq org-modules '(org-bbdb
+                      org-gnus
+                      org-drill
+                      org-info
+                      org-jsinfo
+                      org-habit
+                      org-irc
+                      org-mouse
+                      org-annotate-file
+                      org-eval
+                      org-expiry
+                      org-interactive-query
+                      org-man
+                      org-collector
+                      org-panel
+                      org-screen
+                      org-toc))
+  (eval-after-load 'org
+    '(org-load-modules-maybe t))
+  (setq org-expiry-inactive-timestamps t)
+#+end_src
+
+**** Keyboard shortcuts
+
+#+begin_src emacs-lisp
+  (bind-key "C-c r" 'org-capture)
+  (bind-key "C-c a" 'org-agenda)
+  (bind-key "C-c l" 'org-store-link)
+  (bind-key "C-c L" 'org-insert-link-global)
+  (bind-key "C-c O" 'org-open-at-point-global)
+  (bind-key "<f9> <f9>" 'org-agenda-list)
+  (bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
+  (bind-key "C-TAB" 'org-cycle org-mode-map)
+  (bind-key "C-c v" 'org-show-todo-tree org-mode-map)
+  (bind-key "C-c C-r" 'org-refile org-mode-map)
+  (bind-key "C-c R" 'org-reveal org-mode-map)
+#+end_src
+
+=append-next-kill= is more useful than =org-table-copy-region=.
+
+#+begin_src emacs-lisp
+  (eval-after-load 'org
+    '(bind-key "C-M-w" 'append-next-kill org-mode-map))
+#+end_src
+
+#+RESULTS:
+: append-next-kill
+
+Instead of using diary, make the clock easier to access.
+
+#+begin_src emacs-lisp
+  (eval-after-load 'org-agenda
+    '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
+#+end_src
+
+
+***** Speed commands
+
+To act quickly on tasks.
+
+#+begin_src emacs-lisp
+  (setq org-use-effective-time t)
+
+  (defun wc/org-use-speed-commands-for-headings-and-lists ()
+    "Activate speed commands on list items too."
+    (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+        (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+  (setq org-use-speed-commands 'wc/org-use-speed-commands-for-headings-and-lists)
+
+  (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
+  (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
+  (add-to-list 'org-speed-commands-user '("!" wc/org-clock-in-and-track))
+  (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
+  (add-to-list 'org-speed-commands-user '("d" wc/org-move-line-to-destination))
+  (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
+  (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
+  (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
+  (bind-key "!" 'wc/org-clock-in-and-track org-agenda-mode-map)
+#+end_src
+
+**** Taking notes
+
+
+Org files live in =~/org=, which is actually a symlink (=ln -s= on
+Mac) to a shared directory in Dropbox. This allows the notes to sync
+between different computers with different Dropbox accounts.
+
+
+#+begin_src emacs-lisp
+  (setq org-directory "~/personal")
+  (setq org-default-notes-file "~/personal/organizer.org")
+#+end_src
+
+To add links from outside.
+
+#+begin_src emacs-lisp
+  (defun wc/yank-more ()
+    (interactive)
+    (insert "[[")
+    (yank)
+    (insert "][more]]"))
+  (global-set-key (kbd "<f6>") 'wc/yank-more)
+#+end_src
 
 **** Templates
 
