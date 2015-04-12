@@ -1,16 +1,14 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-12 07:34:17 wcohen>
+# Time-stamp: <2015-04-12 11:16:20 wcohen>
 
 * Configuration
 ** About this file
-<<babel-init>>
 
 Org-babel file for Emacs configuration. Within org-mode, edit source
 blocks with C-c \' (=org-edit-special=).
 
 See [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]] for org-babel setup.
-
 
 
 ** Emacs installation
@@ -38,7 +36,6 @@ On Windows 7, after running emacs:
 Pin it to taskbar, modify the shortcut to =runemacs.exe= instead of
 =emacs.exe=, and set it to run in XP SP3 compatibility mode (so the
 shell can be switched to cygwin =bash= if desired.
-
 
 ** Adding elisp directory
 
@@ -185,7 +182,6 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-utils.el]].
 
 #+end_src
 
-
 *** Packages
 
 All the machinery for installing required packages.
@@ -255,6 +251,13 @@ locate PACKAGE."
 (add-hook 'package-menu-mode-hook 'wc/maybe-widen-package-menu-columns)
 
 
+#+end_src
+
+Use use-package.
+
+#+begin_src emacs-lisp
+  (require-package 'use-package)
+  (require 'use-package)
 #+end_src
 
 Add support for bind-key.
@@ -453,8 +456,8 @@ On Windows, fix errors with unsafe directories in Emacs server.
   ;; C-c i calls insert-date-string
   (global-set-key (kbd "C-c i") 'insert-date-string)
 
-  ;; C-c r reloads ~/.emacs.d/init.el
-  (global-set-key (kbd "C-c r")
+  ;; C-c e reloads ~/.emacs.d/init.el
+  (global-set-key (kbd "C-c e")
                   '(lambda ()
                      (interactive)
                      (load-file "~/.emacs.d/init.el")))
@@ -521,7 +524,6 @@ Modified from [[https://github.com/purcell/emacs.d/blob/master/lisp/init-themes.
 
   (add-hook 'after-init-hook 'zenburn-init)
 #+end_src
-
 
 ** Language support
 
@@ -891,7 +893,6 @@ From
 
 #+end_src
 
-
 *** Paredit
 
 From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-paredit.el]].
@@ -981,7 +982,6 @@ Set up sql-postgres mode to by default as for ports as well
     (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
 #+end_src
 
-
 *** Clojure
 
 #+begin_src emacs-lisp
@@ -1033,230 +1033,138 @@ On my desktop
 
 *** Helm
 
-#+begin_src emacs-lisp
-  (require-package 'helm)
-  (require-package 'helm-projectile)
+Initialize the packages.
 
-  ;;; HELM
+#+begin_src emacs-lisp
+   (require-package 'helm)
+   (require-package 'helm-projectile)
 
   (require 'helm)
-  (require 'helm-config)
-
-  ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-  ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-  ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-  (global-set-key (kbd "C-c h") 'helm-command-prefix)
-  (global-unset-key (kbd "C-x c"))
-
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-
-  (when (executable-find "curl")
-    (setq helm-google-suggest-use-curl-p t))
-
-  (setq helm-split-window-in-side-p t ; open helm buffer inside current
-                                          ; window, not occupy whole other
-                                          ; window
-        helm-move-to-line-cycle-in-source t ; move to end or beginning
-                                          ; of source when reaching top
-                                          ; or bottom of source.
-        helm-ff-search-library-in-sexp t ; search for library in
-                                          ; `require' and
-                                          ; `declare-function' sexp.
-        helm-scroll-amount 8 ; scroll 8 lines other window using
-                                          ; M-<next>/M-<prior>
-        helm-ff-file-name-history-use-recentf t)
-
-  (helm-mode 1)
-
-  (helm-autoresize-mode t)
-
-  (defun pl/helm-alive-p ()
-    (if (boundp 'helm-alive-p)
-        (symbol-value 'helm-alive-p)))
-
-  ;;; Improved M-x
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
-
-  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
-
-  ;;; Helm-mini
-  (global-set-key (kbd "C-x b") 'helm-mini)
-  (setq helm-buffers-fuzzy-matching t
-        helm-recentf-fuzzy-match    t)
-
-  ;;; Helm-locate needs to identify es.exe on Windows
-  (when *is-windows* (add-to-list 'load-path "~/bin"))
-
-  ;;; Helm - Open in Finder / Explorer
-  (when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
-
-  ;;; Helm Projectile
-
-  (projectile-global-mode)
-  (setq projectile-completion-system 'helm)
-  (helm-projectile-on)
-
+   (require 'helm-config)
 
 #+end_src
 
-
-
-*** Org
-
-See [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]] for org info.
-
-
-**** Modules
-
-Modules that are being used for org.
+The default "C-x c" is quite close to "C-x C-c", which quits
+Emacs. Changed to "C-c h". Note: We must set "C-c h" globally, because
+we cannot change `helm-command-prefix-key' once `helm-config' is loaded.
 
 #+begin_src emacs-lisp
-  (setq org-modules '(org-bbdb
-                      org-gnus
-                      org-drill
-                      org-info
-                      org-jsinfo
-                      org-habit
-                      org-irc
-                      org-mouse
-                      org-annotate-file
-                      org-eval
-                      org-expiry
-                      org-interactive-query
-                      org-man
-                      org-collector
-                      org-panel
-                      org-screen
-                      org-toc))
-  (eval-after-load 'org
-    '(org-load-modules-maybe t))
-  (setq org-expiry-inactive-timestamps t)
+   (global-set-key (kbd "C-c h") 'helm-command-prefix)
+   (global-unset-key (kbd "C-x c"))
+
+   (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+   (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+   (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
 #+end_src
 
-**** Keyboard shortcuts
+Use curl.
 
 #+begin_src emacs-lisp
-  (bind-key "C-c r" 'org-capture)
-  (bind-key "C-c a" 'org-agenda)
-  (bind-key "C-c l" 'org-store-link)
-  (bind-key "C-c L" 'org-insert-link-global)
-  (bind-key "C-c O" 'org-open-at-point-global)
-  (bind-key "<f9> <f9>" 'org-agenda-list)
-  (bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
-  (bind-key "C-TAB" 'org-cycle org-mode-map)
-  (bind-key "C-c v" 'org-show-todo-tree org-mode-map)
-  (bind-key "C-c C-r" 'org-refile org-mode-map)
-  (bind-key "C-c R" 'org-reveal org-mode-map)
+   (when (executable-find "curl")
+     (setq helm-google-suggest-use-curl-p t))
 #+end_src
 
-=append-next-kill= is more useful than =org-table-copy-region=.
+
+Arrange helm windows more nicely.
 
 #+begin_src emacs-lisp
-  (eval-after-load 'org
-    '(bind-key "C-M-w" 'append-next-kill org-mode-map))
+   (setq helm-split-window-in-side-p t ; open helm buffer inside current
+                                           ; window, not occupy whole other
+                                           ; window
+         helm-move-to-line-cycle-in-source t ; move to end or beginning
+                                           ; of source when reaching top
+                                           ; or bottom of source.
+         helm-ff-search-library-in-sexp t ; search for library in
+                                           ; `require' and
+                                           ; `declare-function' sexp.
+         helm-scroll-amount 8 ; scroll 8 lines other window using
+                                           ; M-<next>/M-<prior>
+         helm-ff-file-name-history-use-recentf t)
 #+end_src
 
-#+RESULTS:
-: append-next-kill
 
-Instead of using diary, make the clock easier to access.
+Activate helm.
 
 #+begin_src emacs-lisp
-  (eval-after-load 'org-agenda
-    '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
+
+   (helm-mode 1)
+
+   (helm-autoresize-mode t)
+
+
 #+end_src
 
 
-***** Speed commands
-
-To act quickly on tasks.
+Set a variable for helm so it can work with golden-ratio.
 
 #+begin_src emacs-lisp
-  (setq org-use-effective-time t)
 
-  (defun wc/org-use-speed-commands-for-headings-and-lists ()
-    "Activate speed commands on list items too."
-    (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-        (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
-  (setq org-use-speed-commands 'wc/org-use-speed-commands-for-headings-and-lists)
+   (defun wc/helm-alive-p ()
+     (if (boundp 'helm-alive-p)
+         (symbol-value 'helm-alive-p)))
 
-  (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
-  (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
-  (add-to-list 'org-speed-commands-user '("!" wc/org-clock-in-and-track))
-  (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
-  (add-to-list 'org-speed-commands-user '("d" wc/org-move-line-to-destination))
-  (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
-  (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
-  (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
-  (bind-key "!" 'wc/org-clock-in-and-track org-agenda-mode-map)
 #+end_src
 
-**** Taking notes
+
+Set helm keys to be global defaults when possible, for M-x, kill ring,
+and helm-mini.
+
+#+begin_src emacs-lisp
+
+   ;;; Improved M-x
+   (global-set-key (kbd "M-x") 'helm-M-x)
+   (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
+
+   (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+
+   ;;; Helm-mini
+   (global-set-key (kbd "C-x b") 'helm-mini)
+   (setq helm-buffers-fuzzy-matching t
+         helm-recentf-fuzzy-match    t)
+
+#+end_src
+
+Helm search on Windows uses everything. It needs to identify =es.exe=,
+and it'd be nice to open file paths in Explorer.
+
+#+begin_src emacs-lisp
+
+   (when *is-windows* (add-to-list 'load-path "~/bin"))
+   (when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
+
+#+end_src
+
+Set helm to work with projectile.
+
+#+begin_src emacs-lisp
+
+   (projectile-global-mode)
+   (setq projectile-completion-system 'helm)
+   (helm-projectile-on)
+#+end_src
+
+Attempt to speed helm up.
+
+#+begin_src emacs-lisp
+    (setq helm-candidate-number-limit 100)
+    ;; From https://gist.github.com/antifuchs/9238468
+    (setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
+          helm-input-idle-delay 0.01  ; this actually updates things
+                                        ; reeeelatively quickly.
+          helm-quick-update t
+          helm-M-x-requires-pattern nil
+          helm-ff-skip-boring-files t)
+#+end_src
 
 
-Org files live in =~/org=, which is actually a symlink (=ln -s= on
-Mac) to a shared directory in Dropbox. This allows the notes to sync
-between different computers with different Dropbox accounts.
+Turns off ido mode in case I enabled it elsewhere accidentally.
 
 
 #+begin_src emacs-lisp
-  (setq org-directory "~/personal")
-  (setq org-default-notes-file "~/personal/organizer.org")
+  (ido-mode -1)
 #+end_src
 
-To add links from outside.
-
-#+begin_src emacs-lisp
-  (defun wc/yank-more ()
-    (interactive)
-    (insert "[[")
-    (yank)
-    (insert "][more]]"))
-  (global-set-key (kbd "<f6>") 'wc/yank-more)
-#+end_src
-
-**** Templates
-
-***** Structure templates
-
-Insert blocks using =<s[TAB]=, etc.
-Redefine =<l= to insert Emacs lisp block instead of LaTeX.
-
-#+begin_src emacs-lisp
-  (setq org-structure-template-alist
-        '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
-          ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
-          ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
-          ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
-          ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
-          ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
-          ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
-          ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
-          ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
-          ("H" "#+html: " "<literal style=\"html\">?</literal>")
-          ("a" "#+begin_ascii\n?\n#+end_ascii")
-          ("A" "#+ascii: ")
-          ("i" "#+index: ?" "#+index: ?")
-          ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
-#+end_src
-
-**** HTML Export
-
-Attempting to export to HTML gives the following error:
-
-#+begin_example
-  org-html-fontify-code: Wrong number of arguments: #[(_beg _end) "À " [font-lock-fontify-buffer] 1], 0
-#+end_example
-
-Accordingly, follow the directions from [[http://wenshanren.org/?p%3D781][here]].
-
-#+begin_src emacs-lisp
-  (defun org-font-lock-ensure ()
-    (font-lock-fontify-buffer))
-#+end_src
 
 *** Javascript
 
@@ -1455,6 +1363,402 @@ Scheme and Racket
 
 #+end_src
 
+
+** Navigation
+
+*** Pop to mark
+
+Handy way of getting back to previous places.
+
+#+BEGIN_SRC emacs-lisp
+(bind-key "C-x p" 'pop-to-mark-command)
+(setq set-mark-command-repeat-pop t)
+#+END_SRC
+*** Helm-swoop - quickly finding lines
+
+This promises to be a fast way to find things. Let's bind it to =Ctrl-Shift-S= to see if I can get used to that...
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm-swoop
+    :defer t
+    :ensure
+    :bind
+   (("C-S-s" . helm-swoop)
+    ("M-i" . helm-swoop)
+    ("M-s s" . helm-swoop)
+    ("M-s M-s" . helm-swoop)
+    ("M-I" . helm-swoop-back-to-last-point)
+    ("C-c M-i" . helm-multi-swoop)
+    ("C-x M-i" . helm-multi-swoop-all)
+    )
+   :config
+   (progn
+     (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+     (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop))
+  )
+#+END_SRC
+
+*** Frequently-accessed files
+Registers allow you to jump to a file or other location quickly. To
+jump to a register, use =C-x r j= followed by the letter of the
+register. Using registers for all these file shortcuts is probably a
+bit of a waste since I can easily define my own keymap, but since I
+rarely go beyond register A anyway. Also, I might as well add
+shortcuts for refiling.
+
+
+#+BEGIN_SRC emacs-lisp
+(defvar wc/refile-map (make-sparse-keymap))
+
+(defmacro wc/defshortcut (key file)
+  `(progn
+     (set-register ,key (cons 'file ,file))
+     (define-key wc/refile-map
+       (char-to-string ,key)
+       (lambda (prefix)
+         (interactive "p")
+         (let ((org-refile-targets '(((,file) :maxlevel . 6)))
+               (current-prefix-arg (or current-prefix-arg '(4))))
+           (call-interactively 'org-refile))))))
+
+(wc/defshortcut ?i "~/.emacs.d/wcohen.org")
+(wc/defshortcut ?o "~/org/organizer.org")
+(wc/defshortcut ?w "~/org/work.org")
+#+END_SRC
+
+Add shortcut for =jump-to-register=.
+
+#+begin_src emacs-lisp
+  (bind-key "C-c g" 'jump-to-register)
+#+end_src
+
+** Org
+
+See [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]] for org info.
+
+*** My files
+
+These are the org files I use.
+
+| organizer.org | Main Org file, for M-x org-capture, tasks, weekly reviews |
+| work.org      | Work-related notes and TODOs                              |
+|               |                                                           |
+
+*** Modules
+
+Modules that are being used for org.
+
+#+begin_src emacs-lisp
+  (setq org-modules '(org-bbdb
+                      org-gnus
+                      org-drill
+                      org-info
+                      org-jsinfo
+                      org-habit
+                      org-irc
+                      org-mouse
+                      org-annotate-file
+                      org-eval
+                      org-expiry
+                      org-interactive-query
+                      org-man
+                      org-collector
+                      org-panel
+                      org-screen
+                      org-toc))
+  (eval-after-load 'org
+    '(org-load-modules-maybe t))
+  (setq org-expiry-inactive-timestamps t)
+#+end_src
+
+*** Navigation
+
+From http://stackoverflow.com/questions/15011703/is-there-an-emacs-org-mode-command-to-jump-to-an-org-heading
+#+begin_src emacs-lisp
+  (setq org-goto-interface 'outline
+        org-goto-max-level 10)
+  (require 'imenu)
+  (setq org-startup-folded nil)
+  (bind-key "C-c j" 'org-clock-goto) ;; jump to current task from anywhere
+  (bind-key "C-c C-w" 'org-refile)
+  (setq org-cycle-include-plain-lists 'integrate)
+#+end_src
+
+**** Link Org subtrees and navigate between them
+  The following code makes it easier for me to link trees with entries, as in http://sachachua.com/evil-plans
+
+  #+begin_src emacs-lisp
+  (defun wc/org-follow-entry-link ()
+    "Follow the defined link for this entry."
+    (interactive)
+    (if (org-entry-get (point) "LINK")
+        (org-open-link-from-string (org-entry-get (point) "LINK"))
+      (org-open-at-point)))
+
+  (bind-key "C-c o" 'wc/org-follow-entry-link org-mode-map)
+
+  (defun wc/org-link-projects (location)
+    "Add link properties between the current subtree and the one specified by LOCATION."
+    (interactive
+     (list (let ((org-refile-use-cache nil))
+       (org-refile-get-location "Location"))))
+    (let ((link1 (org-store-link nil)) link2)
+      (save-window-excursion
+        (org-refile 4 nil location)
+        (setq link2 (org-store-link nil))
+        (org-set-property "LINK" link1))
+      (org-set-property "LINK" link2)))
+  #+end_src
+
+**** Viewing, navigating, and editing the Org tree
+
+      I often cut and paste subtrees. This makes it easier to cut
+      something and paste it elsewhere in the hierarchy.
+      #+begin_src emacs-lisp
+        (eval-after-load 'org
+          '(progn
+             (bind-key "C-c k" 'org-cut-subtree org-mode-map)
+             (setq org-yank-adjusted-subtrees t)))
+  #+end_src
+
+*** Keyboard shortcuts
+
+#+begin_src emacs-lisp
+  (bind-key "C-c r" 'org-capture)
+  (bind-key "C-c a" 'org-agenda)
+  (bind-key "C-c l" 'org-store-link)
+  (bind-key "C-c L" 'org-insert-link-global)
+  (bind-key "C-c O" 'org-open-at-point-global)
+  (bind-key "<f9> <f9>" 'org-agenda-list)
+  (bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
+  (bind-key "C-TAB" 'org-cycle org-mode-map)
+  (bind-key "C-c v" 'org-show-todo-tree org-mode-map)
+  (bind-key "C-c C-r" 'org-refile org-mode-map)
+  (bind-key "C-c R" 'org-reveal org-mode-map)
+#+end_src
+
+=append-next-kill= is more useful than =org-table-copy-region=.
+
+#+begin_src emacs-lisp
+  (eval-after-load 'org
+    '(bind-key "C-M-w" 'append-next-kill org-mode-map))
+#+end_src
+
+#+RESULTS:
+: append-next-kill
+
+Instead of using diary, make the clock easier to access.
+
+#+begin_src emacs-lisp
+  (eval-after-load 'org-agenda
+    '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
+#+end_src
+
+**** Speed commands
+
+To act quickly on tasks.
+
+#+begin_src emacs-lisp
+  (setq org-use-effective-time t)
+
+  (defun wc/org-use-speed-commands-for-headings-and-lists ()
+    "Activate speed commands on list items too."
+    (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+        (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+  (setq org-use-speed-commands 'wc/org-use-speed-commands-for-headings-and-lists)
+
+  (add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
+  (add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
+  (add-to-list 'org-speed-commands-user '("!" wc/org-clock-in-and-track))
+  (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
+  (add-to-list 'org-speed-commands-user '("d" wc/org-move-line-to-destination))
+  (add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
+  (add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
+  (add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
+  (bind-key "!" 'wc/org-clock-in-and-track org-agenda-mode-map)
+#+end_src
+
+*** Taking notes
+
+
+Org files live in =~/org=, which is actually a symlink (=ln -s= on
+Mac) to a shared directory in Dropbox. This allows the notes to sync
+between different computers with different Dropbox accounts.
+
+
+#+begin_src emacs-lisp
+  (setq org-directory "~/org")
+  (setq org-default-notes-file "~/org/organizer.org")
+#+end_src
+
+To add links from outside.
+
+#+begin_src emacs-lisp
+  (defun wc/yank-more ()
+    (interactive)
+    (insert "[[")
+    (yank)
+    (insert "][more]]"))
+  (global-set-key (kbd "<f6>") 'wc/yank-more)
+#+end_src
+
+*** Tasks
+
+**** Managing tasks
+
+***** Track TODO state
+
+The parentheses indicate keyboard shortcuts that I can use to set the
+ task state. =@= and =!= toggle logging. =@= prompts you for a note,
+ and =!= automatically logs the timestamp of the state change.
+
+ #+begin_src emacs-lisp
+        (setq org-todo-keywords
+         '((sequence
+            "TODO(t)"  ; next action
+            "STARTED(s)"
+            "WAITING(w@/!)"
+            "SOMEDAY(.)" "|" "DONE(x!)" "CANCELLED(c@)")
+           (sequence "LEARN" "DO" "TEACH" "|" "COMPLETE(x)")
+           (sequence "TODELEGATE(-)" "DELEGATED(d)" "|" "COMPLETE(x)")))
+ #+end_src
+
+ #+begin_src emacs-lisp
+ (setq org-todo-keyword-faces
+       '(("TODO" . (:foreground "green" :weight bold))
+         ("DONE" . (:foreground "cyan" :weight bold))
+         ("WAITING" . (:foreground "red" :weight bold))
+         ("SOMEDAY" . (:foreground "gray" :weight bold))))
+ #+end_src
+
+***** Projects
+
+  Projects are headings with the =:project:= tag, so we generally don't
+  want that tag inherited, except when we display unscheduled tasks that
+  don't belong to any projects.
+
+       #+begin_src emacs-lisp
+         (setq org-tags-exclude-from-inheritance '("project"))
+       #+end_src
+
+  This code makes it easy for me to focus on one project and its tasks.
+
+  #+begin_src emacs-lisp
+    (add-to-list 'org-speed-commands-user '("N" org-narrow-to-subtree))
+    (add-to-list 'org-speed-commands-user '("W" widen))
+    (defun wc/org-agenda-for-subtree ()
+      (interactive)
+      (if (derived-mode-p 'org-agenda-mode)
+        (let* ((marker (or (org-get-at-bol 'org-marker)
+                           (org-agenda-error)))
+               (hdmarker (or (org-get-at-bol 'org-hd-marker) marker))
+               (pos (marker-position marker))
+               (col (current-column))
+               newhead)
+          (org-with-remote-undo (marker-buffer marker)
+            (with-current-buffer (marker-buffer marker)
+              (widen)
+              (let ((org-agenda-view-columns-initially t))
+                (org-agenda nil "t" 'subtree)))))
+        (let ((org-agenda-view-columns-initially t))
+          (org-agenda nil "t" 'subtree))))
+    (add-to-list 'org-speed-commands-user '("T" wc/org-agenda-for-subtree))
+  #+end_src
+
+  There's probably a proper way to do this, maybe with =<=. Oh, that would work nicely. =< C-c a t= too.
+
+***** Tag tasks with GTD-ish contexts
+
+  This defines keyboard shortcuts for those, too.
+
+       #+begin_src emacs-lisp
+                (setq org-tag-alist '(("@work" . ?b)
+                                      ("@home" . ?h)
+                                      ("@writing" . ?w)
+                                      ("@errands" . ?e)
+                                      ("@coding" . ?c)
+                                      ("@phone" . ?p)
+                                      ("@reading" . ?r)
+                                      ("@computer" . ?l)
+                                      ("lowenergy" . ?0)
+                                      ("highenergy" . ?1)))
+       #+end_src
+***** Enable filtering by effort estimates
+
+  That way, it's easy to see short tasks that I can finish.
+
+  #+begin_src emacs-lisp
+    (add-to-list 'org-global-properties
+          '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00"))
+  #+end_src
+
+***** Track time
+
+  #+begin_src emacs-lisp
+    (use-package org
+     :init
+     (progn
+      (setq org-clock-idle-time nil)
+      (setq org-log-done 'time)
+      (setq org-clock-continuously t)
+      (setq org-clock-persist t)
+      (setq org-clock-in-switch-to-state "STARTED")
+      (setq org-clock-in-resume t)
+      (setq org-clock-report-include-clocking-task t))
+     :config
+     (progn
+      (org-clock-persistence-insinuate)))
+  #+end_src
+
+  Too many clock entries clutter up a heading.
+
+  #+begin_src emacs-lisp
+  (setq org-log-into-drawer "LOGBOOK")
+  (setq org-clock-into-drawer 1)
+  #+end_src
+
+*** Templates
+
+**** Structure templates
+
+Insert blocks using =<s[TAB]=, etc.
+Redefine =<l= to insert Emacs lisp block instead of LaTeX.
+
+#+begin_src emacs-lisp
+  (setq org-structure-template-alist
+        '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+          ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+          ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+          ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
+          ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
+          ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
+          ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
+          ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
+          ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+          ("H" "#+html: " "<literal style=\"html\">?</literal>")
+          ("a" "#+begin_ascii\n?\n#+end_ascii")
+          ("A" "#+ascii: ")
+          ("i" "#+index: ?" "#+index: ?")
+          ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
+#+end_src
+
+*** HTML Export
+
+Attempting to export to HTML gives the following error:
+
+#+begin_example
+  org-html-fontify-code: Wrong number of arguments: #[(_beg _end) "À " [font-lock-fontify-buffer] 1], 0
+#+end_example
+
+Accordingly, follow the directions from [[http://wenshanren.org/?p%3D781][here]].
+
+#+begin_src emacs-lisp
+  (defun org-font-lock-ensure ()
+    (font-lock-fontify-buffer))
+#+end_src
+
+
+
 ** Interactivity
 
 *** Company mode
@@ -1634,7 +1938,7 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
 
   ;;; Helm Autoresize and Golden Ratio can coexist
 
-  (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)
+  (add-to-list 'golden-ratio-inhibit-functions 'wc/helm-alive-p)
 
   ;; Make "C-x o" prompt for a target window when there are more than 2
 

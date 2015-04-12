@@ -177,6 +177,9 @@ locate PACKAGE."
 
 (add-hook 'package-menu-mode-hook 'wc/maybe-widen-package-menu-columns)
 
+(require-package 'use-package)
+(require 'use-package)
+
 (require-package 'bind-key)
 
 (when *is-mac* (require-package 'exec-path-from-shell))
@@ -336,8 +339,8 @@ with a Windows external keyboard from time to time."
 ;; C-c i calls insert-date-string
 (global-set-key (kbd "C-c i") 'insert-date-string)
 
-;; C-c r reloads ~/.emacs.d/init.el
-(global-set-key (kbd "C-c r")
+;; C-c e reloads ~/.emacs.d/init.el
+(global-set-key (kbd "C-c e")
                 '(lambda ()
                    (interactive)
                    (load-file "~/.emacs.d/init.el")))
@@ -836,16 +839,11 @@ With arg N, insert N newlines."
   )
 
 (require-package 'helm)
-(require-package 'helm-projectile)
-
-;;; HELM
+ (require-package 'helm-projectile)
 
 (require 'helm)
-(require 'helm-config)
+ (require 'helm-config)
 
-;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
 (global-set-key (kbd "C-c h") 'helm-command-prefix)
 (global-unset-key (kbd "C-x c"))
 
@@ -873,7 +871,7 @@ With arg N, insert N newlines."
 
 (helm-autoresize-mode t)
 
-(defun pl/helm-alive-p ()
+(defun wc/helm-alive-p ()
   (if (boundp 'helm-alive-p)
       (symbol-value 'helm-alive-p)))
 
@@ -888,103 +886,14 @@ With arg N, insert N newlines."
 (setq helm-buffers-fuzzy-matching t
       helm-recentf-fuzzy-match    t)
 
-;;; Helm-locate needs to identify es.exe on Windows
 (when *is-windows* (add-to-list 'load-path "~/bin"))
-
-;;; Helm - Open in Finder / Explorer
 (when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
-
-;;; Helm Projectile
 
 (projectile-global-mode)
 (setq projectile-completion-system 'helm)
 (helm-projectile-on)
 
-(setq org-modules '(org-bbdb
-                    org-gnus
-                    org-drill
-                    org-info
-                    org-jsinfo
-                    org-habit
-                    org-irc
-                    org-mouse
-                    org-annotate-file
-                    org-eval
-                    org-expiry
-                    org-interactive-query
-                    org-man
-                    org-collector
-                    org-panel
-                    org-screen
-                    org-toc))
-(eval-after-load 'org
-  '(org-load-modules-maybe t))
-(setq org-expiry-inactive-timestamps t)
-
-(bind-key "C-c r" 'org-capture)
-(bind-key "C-c a" 'org-agenda)
-(bind-key "C-c l" 'org-store-link)
-(bind-key "C-c L" 'org-insert-link-global)
-(bind-key "C-c O" 'org-open-at-point-global)
-(bind-key "<f9> <f9>" 'org-agenda-list)
-(bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
-(bind-key "C-TAB" 'org-cycle org-mode-map)
-(bind-key "C-c v" 'org-show-todo-tree org-mode-map)
-(bind-key "C-c C-r" 'org-refile org-mode-map)
-(bind-key "C-c R" 'org-reveal org-mode-map)
-
-(eval-after-load 'org
-  '(bind-key "C-M-w" 'append-next-kill org-mode-map))
-
-(eval-after-load 'org-agenda
-  '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
-
-(setq org-use-effective-time t)
-
-(defun wc/org-use-speed-commands-for-headings-and-lists ()
-  "Activate speed commands on list items too."
-  (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-      (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
-(setq org-use-speed-commands 'wc/org-use-speed-commands-for-headings-and-lists)
-
-(add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
-(add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
-(add-to-list 'org-speed-commands-user '("!" wc/org-clock-in-and-track))
-(add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
-(add-to-list 'org-speed-commands-user '("d" wc/org-move-line-to-destination))
-(add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
-(add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
-(add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
-(bind-key "!" 'wc/org-clock-in-and-track org-agenda-mode-map)
-
-(setq org-directory "~/personal")
-(setq org-default-notes-file "~/personal/organizer.org")
-
-(defun wc/yank-more ()
-  (interactive)
-  (insert "[[")
-  (yank)
-  (insert "][more]]"))
-(global-set-key (kbd "<f6>") 'wc/yank-more)
-
-(setq org-structure-template-alist
-      '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
-        ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
-        ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
-        ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
-        ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
-        ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
-        ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
-        ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
-        ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
-        ("H" "#+html: " "<literal style=\"html\">?</literal>")
-        ("a" "#+begin_ascii\n?\n#+end_ascii")
-        ("A" "#+ascii: ")
-        ("i" "#+index: ?" "#+index: ?")
-        ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
-
-(defun org-font-lock-ensure ()
-  (font-lock-fontify-buffer))
+(ido-mode -1)
 
 (require-package 'json-mode)
 (maybe-require-package 'js2-mode)
@@ -1155,6 +1064,234 @@ With arg N, insert N newlines."
 
 (add-hook 'web-mode-hook 'web-mode-hook-settings)
 
+(bind-key "C-x p" 'pop-to-mark-command)
+(setq set-mark-command-repeat-pop t)
+
+(use-package helm-swoop
+  :defer t
+  :ensure
+  :bind
+ (("C-S-s" . helm-swoop)
+  ("M-i" . helm-swoop)
+  ("M-s s" . helm-swoop)
+  ("M-s M-s" . helm-swoop)
+  ("M-I" . helm-swoop-back-to-last-point)
+  ("C-c M-i" . helm-multi-swoop)
+  ("C-x M-i" . helm-multi-swoop-all)
+  )
+ :config
+ (progn
+   (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+   (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop))
+)
+
+(defvar wc/refile-map (make-sparse-keymap))
+
+(defmacro wc/defshortcut (key file)
+  `(progn
+     (set-register ,key (cons 'file ,file))
+     (define-key wc/refile-map
+       (char-to-string ,key)
+       (lambda (prefix)
+         (interactive "p")
+         (let ((org-refile-targets '(((,file) :maxlevel . 6)))
+               (current-prefix-arg (or current-prefix-arg '(4))))
+           (call-interactively 'org-refile))))))
+
+(wc/defshortcut ?i "~/.emacs.d/wcohen.org")
+(wc/defshortcut ?o "~/org/organizer.org")
+(wc/defshortcut ?w "~/org/work.org")
+
+(bind-key "C-c g" 'jump-to-register)
+
+(setq org-modules '(org-bbdb
+                    org-gnus
+                    org-drill
+                    org-info
+                    org-jsinfo
+                    org-habit
+                    org-irc
+                    org-mouse
+                    org-annotate-file
+                    org-eval
+                    org-expiry
+                    org-interactive-query
+                    org-man
+                    org-collector
+                    org-panel
+                    org-screen
+                    org-toc))
+(eval-after-load 'org
+  '(org-load-modules-maybe t))
+(setq org-expiry-inactive-timestamps t)
+
+(setq org-goto-interface 'outline
+      org-goto-max-level 10)
+(require 'imenu)
+(setq org-startup-folded nil)
+(bind-key "C-c j" 'org-clock-goto) ;; jump to current task from anywhere
+(bind-key "C-c C-w" 'org-refile)
+(setq org-cycle-include-plain-lists 'integrate)
+
+(defun wc/org-follow-entry-link ()
+  "Follow the defined link for this entry."
+  (interactive)
+  (if (org-entry-get (point) "LINK")
+      (org-open-link-from-string (org-entry-get (point) "LINK"))
+    (org-open-at-point)))
+
+(bind-key "C-c o" 'wc/org-follow-entry-link org-mode-map)
+
+(defun wc/org-link-projects (location)
+  "Add link properties between the current subtree and the one specified by LOCATION."
+  (interactive
+   (list (let ((org-refile-use-cache nil))
+     (org-refile-get-location "Location"))))
+  (let ((link1 (org-store-link nil)) link2)
+    (save-window-excursion
+      (org-refile 4 nil location)
+      (setq link2 (org-store-link nil))
+      (org-set-property "LINK" link1))
+    (org-set-property "LINK" link2)))
+
+(eval-after-load 'org
+  '(progn
+     (bind-key "C-c k" 'org-cut-subtree org-mode-map)
+     (setq org-yank-adjusted-subtrees t)))
+
+(bind-key "C-c r" 'org-capture)
+(bind-key "C-c a" 'org-agenda)
+(bind-key "C-c l" 'org-store-link)
+(bind-key "C-c L" 'org-insert-link-global)
+(bind-key "C-c O" 'org-open-at-point-global)
+(bind-key "<f9> <f9>" 'org-agenda-list)
+(bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
+(bind-key "C-TAB" 'org-cycle org-mode-map)
+(bind-key "C-c v" 'org-show-todo-tree org-mode-map)
+(bind-key "C-c C-r" 'org-refile org-mode-map)
+(bind-key "C-c R" 'org-reveal org-mode-map)
+
+(eval-after-load 'org
+  '(bind-key "C-M-w" 'append-next-kill org-mode-map))
+
+(eval-after-load 'org-agenda
+  '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map))
+
+(setq org-use-effective-time t)
+
+(defun wc/org-use-speed-commands-for-headings-and-lists ()
+  "Activate speed commands on list items too."
+  (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+      (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+(setq org-use-speed-commands 'wc/org-use-speed-commands-for-headings-and-lists)
+
+(add-to-list 'org-speed-commands-user '("x" org-todo "DONE"))
+(add-to-list 'org-speed-commands-user '("y" org-todo-yesterday "DONE"))
+(add-to-list 'org-speed-commands-user '("!" wc/org-clock-in-and-track))
+(add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
+(add-to-list 'org-speed-commands-user '("d" wc/org-move-line-to-destination))
+(add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
+(add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
+(add-to-list 'org-speed-commands-user '("$" call-interactively 'org-archive-subtree))
+(bind-key "!" 'wc/org-clock-in-and-track org-agenda-mode-map)
+
+(setq org-directory "~/org")
+(setq org-default-notes-file "~/org/organizer.org")
+
+(defun wc/yank-more ()
+  (interactive)
+  (insert "[[")
+  (yank)
+  (insert "][more]]"))
+(global-set-key (kbd "<f6>") 'wc/yank-more)
+
+(setq org-todo-keywords
+ '((sequence
+    "TODO(t)"  ; next action
+    "STARTED(s)"
+    "WAITING(w@/!)"
+    "SOMEDAY(.)" "|" "DONE(x!)" "CANCELLED(c@)")
+   (sequence "LEARN" "DO" "TEACH" "|" "COMPLETE(x)")
+   (sequence "TODELEGATE(-)" "DELEGATED(d)" "|" "COMPLETE(x)")))
+
+(setq org-todo-keyword-faces
+      '(("TODO" . (:foreground "green" :weight bold))
+        ("DONE" . (:foreground "cyan" :weight bold))
+        ("WAITING" . (:foreground "red" :weight bold))
+        ("SOMEDAY" . (:foreground "gray" :weight bold))))
+
+(setq org-tags-exclude-from-inheritance '("project"))
+
+(add-to-list 'org-speed-commands-user '("N" org-narrow-to-subtree))
+(add-to-list 'org-speed-commands-user '("W" widen))
+(defun wc/org-agenda-for-subtree ()
+  (interactive)
+  (if (derived-mode-p 'org-agenda-mode)
+    (let* ((marker (or (org-get-at-bol 'org-marker)
+                       (org-agenda-error)))
+           (hdmarker (or (org-get-at-bol 'org-hd-marker) marker))
+           (pos (marker-position marker))
+           (col (current-column))
+           newhead)
+      (org-with-remote-undo (marker-buffer marker)
+        (with-current-buffer (marker-buffer marker)
+          (widen)
+          (let ((org-agenda-view-columns-initially t))
+            (org-agenda nil "t" 'subtree)))))
+    (let ((org-agenda-view-columns-initially t))
+      (org-agenda nil "t" 'subtree))))
+(add-to-list 'org-speed-commands-user '("T" wc/org-agenda-for-subtree))
+
+(setq org-tag-alist '(("@work" . ?b)
+                      ("@home" . ?h)
+                      ("@writing" . ?w)
+                      ("@errands" . ?e)
+                      ("@coding" . ?c)
+                      ("@phone" . ?p)
+                      ("@reading" . ?r)
+                      ("@computer" . ?l)
+                      ("lowenergy" . ?0)
+                      ("highenergy" . ?1)))
+
+(add-to-list 'org-global-properties
+      '("Effort_ALL". "0:05 0:15 0:30 1:00 2:00 3:00 4:00"))
+
+(use-package org
+ :init
+ (progn
+  (setq org-clock-idle-time nil)
+  (setq org-log-done 'time)
+  (setq org-clock-continuously t)
+  (setq org-clock-persist t)
+  (setq org-clock-in-switch-to-state "STARTED")
+  (setq org-clock-in-resume t)
+  (setq org-clock-report-include-clocking-task t))
+ :config
+ (progn
+  (org-clock-persistence-insinuate)))
+
+(setq org-log-into-drawer "LOGBOOK")
+(setq org-clock-into-drawer 1)
+
+(setq org-structure-template-alist
+      '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+        ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+        ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+        ("v" "#+BEGIN_VERSE\n?\n#+END_VERSE" "<verse>\n?\n</verse>")
+        ("c" "#+BEGIN_COMMENT\n?\n#+END_COMMENT")
+        ("p" "#+BEGIN_PRACTICE\n?\n#+END_PRACTICE")
+        ("l" "#+begin_src emacs-lisp\n?\n#+end_src" "<src lang=\"emacs-lisp\">\n?\n</src>")
+        ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
+        ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+        ("H" "#+html: " "<literal style=\"html\">?</literal>")
+        ("a" "#+begin_ascii\n?\n#+end_ascii")
+        ("A" "#+ascii: ")
+        ("i" "#+index: ?" "#+index: ?")
+        ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
+
+(defun org-font-lock-ensure ()
+  (font-lock-fontify-buffer))
+
 (require-package 'company)
 
 (require 'company)
@@ -1299,7 +1436,7 @@ With arg N, insert N newlines."
 
 ;;; Helm Autoresize and Golden Ratio can coexist
 
-(add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)
+(add-to-list 'golden-ratio-inhibit-functions 'wc/helm-alive-p)
 
 ;; Make "C-x o" prompt for a target window when there are more than 2
 
