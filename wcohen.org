@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-12 01:29:01 wcohen>
+# Time-stamp: <2015-04-12 02:19:43 wcohen>
 
 * Configuration
 ** About this file
@@ -501,7 +501,12 @@ Python, R, and JS.
 Set default theme to zenburn.
 Modified from [[https://github.com/purcell/emacs.d/blob/master/lisp/init-themes.el]].
 
+
 #+begin_src emacs-lisp
+
+(require-package 'zenburn-theme)
+
+
   (defun zenburn-init ()
     (load-theme 'zenburn)
     )
@@ -1332,15 +1337,6 @@ Scheme and Racket
 
 ** Interactivity
 
-*** Discover mode
-
-Add discover mode, to learn dired.
-
-#+begin_src emacs-lisp
-  (require 'discover)
-  (global-discover-mode 1)
-#+end_src
-
 *** Company mode
 
 #+begin_src emacs-lisp
@@ -1468,7 +1464,6 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-git.el]].
 From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
 
 #+begin_src emacs-lisp
-  (require 'init-git)
 
   (require-package 'yagist)
   (require-package 'github-browse-file)
@@ -1480,15 +1475,12 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
 
 #+end_src
 
-*** Company mode
+*** Discover mode
 
 #+begin_src emacs-lisp
-  (require-package 'company)
-
-  (require 'company)
-
-  (add-hook 'after-init-hook 'global-company-mode)
-
+  (require-package 'discover)
+  (require 'discover)
+  (global-discover-mode 1)
 #+end_src
 
 *** Window manipulation
@@ -1653,7 +1645,8 @@ From
 **** Spelling
 
 From
-[[https://github.com/purcell/emacs.d/blob/master/lisp/init-spelling.el]].
+[[https://github.com/purcell/emacs.d/blob/master/lisp/init-spelling.el]] and
+[[https://github.com/purcell/emacs.d/blob/master/lisp/init-flyspell.el]].
 
 #+begin_src emacs-lisp
   (require 'ispell)
@@ -1661,16 +1654,6 @@ From
   (when *is-my-desktop* (add-to-list 'exec-path "C:/Program Files (x86)/Aspell/bin/"))
 
   (when (executable-find ispell-program-name)
-    (require 'init-flyspell))
-#+end_src
-
-
-**** Flyspell
-
-From
-[[https://github.com/purcell/emacs.d/blob/master/lisp/init-flyspell.el]].
-
-#+begin_src emacs-lisp
   ;;----------------------------------------------------------------------------
   ;; Add spell-checking in comments for all programming language modes
   ;;----------------------------------------------------------------------------
@@ -1696,7 +1679,15 @@ From
       (add-hook hook 'flyspell-prog-mode)))
 
   (after-load 'flyspell
-    (add-to-list 'flyspell-prog-text-faces 'nxml-text-face))
+    (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
+#+end_src
+
+
+**** Flyspell
+
+
+#+begin_src emacs-lisp
+
 
 #+end_src
 

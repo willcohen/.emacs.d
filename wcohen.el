@@ -373,11 +373,14 @@ with a Windows external keyboard from time to time."
 ;; Replace tabs with spaces
 (setq-default indent-tabs-mode nil)
 
-(defun zenburn-init ()
-  (load-theme 'zenburn)
-  )
+(require-package 'zenburn-theme)
 
-(add-hook 'after-init-hook 'zenburn-init)
+
+  (defun zenburn-init ()
+    (load-theme 'zenburn)
+    )
+
+  (add-hook 'after-init-hook 'zenburn-init)
 
 (require-package 'unfill)
 
@@ -1083,9 +1086,6 @@ With arg N, insert N newlines."
 
 (add-hook 'web-mode-hook 'web-mode-hook-settings)
 
-(require 'discover)
-(global-discover-mode 1)
-
 (require-package 'company)
 
 (require 'company)
@@ -1190,8 +1190,6 @@ With arg N, insert N newlines."
 (when *is-windows*
   (setenv "GIT_ASKPASS" "git-gui--askpass"))
 
-(require 'init-git)
-
 (require-package 'yagist)
 (require-package 'github-browse-file)
 (require-package 'bug-reference-github)
@@ -1200,11 +1198,9 @@ With arg N, insert N newlines."
 (maybe-require-package 'github-clone)
 (maybe-require-package 'magit-gh-pulls)
 
-(require-package 'company)
-
-(require 'company)
-
-(add-hook 'after-init-hook 'global-company-mode)
+(require-package 'discover)
+(require 'discover)
+(global-discover-mode 1)
 
 (require-package 'golden-ratio)
 (require-package 'winner)
@@ -1345,8 +1341,6 @@ Call a second time to restore the original window configuration."
 (when *is-my-desktop* (add-to-list 'exec-path "C:/Program Files (x86)/Aspell/bin/"))
 
 (when (executable-find ispell-program-name)
-  (require 'init-flyspell))
-
 ;;----------------------------------------------------------------------------
 ;; Add spell-checking in comments for all programming language modes
 ;;----------------------------------------------------------------------------
@@ -1372,7 +1366,9 @@ Call a second time to restore the original window configuration."
     (add-hook hook 'flyspell-prog-mode)))
 
 (after-load 'flyspell
-  (add-to-list 'flyspell-prog-text-faces 'nxml-text-face))
+  (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
+
+
 
 (require-package 'htmlize)
 (require-package 'regex-tool)
