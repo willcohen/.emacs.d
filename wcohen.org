@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-12 00:36:54 wcohen>
+# Time-stamp: <2015-04-12 01:12:33 wcohen>
 
 * Configuration
 ** About this file
@@ -1074,13 +1074,11 @@ On my desktop
 
 
 
-** Org
+*** Org
 
-**
+**** Templates
 
-*** Templates
-
-**** Structure templates
+***** Structure templates
 
 Insert blocks using =<s[TAB]=, etc.
 Redefine =<l= to insert Emacs lisp block instead of LaTeX.
@@ -1103,7 +1101,7 @@ Redefine =<l= to insert Emacs lisp block instead of LaTeX.
           ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
 #+end_src
 
-*** HTML Export
+**** HTML Export
 
 Attempting to export to HTML gives the following error:
 
@@ -1140,7 +1138,136 @@ Add discover mode, to learn dired.
 
 #+end_src
 
-** Window manipulation
+*** Version control
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-vc.el]]
+
+#+begin_src emacs-lisp
+  (require-package 'diff-hl)
+  (add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
+  (add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode)
+#+end_src
+
+**** Git
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-git.el]].
+
+#+begin_src emacs-lisp
+  (require-package 'magit)
+  (require-package 'git-blame)
+  (require-package 'git-commit-mode)
+  (require-package 'git-rebase-mode)
+  (require-package 'gitignore-mode)
+  (require-package 'gitconfig-mode)
+  (require-package 'git-messenger) ;; Though see also vc-annotate's "n" & "p" bindings
+  (require-package 'git-timemachine)
+
+  (setq-default
+   magit-save-some-buffers nil
+   magit-process-popup-time 10
+   magit-diff-refine-hunk t
+   magit-completing-read-function 'magit-ido-completing-read)
+
+  ;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
+  ;; quickly open magit on any one of your projects.
+  (global-set-key [(meta f12)] 'magit-status)
+
+  (after-load 'magit
+    (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-goto-parent-section))
+
+  (require-package 'fullframe)
+  (after-load 'magit
+    (fullframe magit-status magit-mode-quit-window))
+
+  (add-hook 'git-commit-mode-hook 'goto-address-mode)
+  (after-load 'session
+    (add-to-list 'session-mode-disable-list 'git-commit-mode))
+
+  
+  ;;; When we start working on git-backed files, use git-wip if available
+
+  (after-load 'magit
+    (when (executable-find magit-git-executable)
+      (global-magit-wip-save-mode)
+      (diminish 'magit-wip-save-mode)))
+
+  (after-load 'magit
+    (diminish 'magit-auto-revert-mode))
+
+  
+  (when *is-mac*
+    (after-load 'magit
+      (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
+
+
+  
+  ;; Convenient binding for vc-git-grep
+  (global-set-key (kbd "C-x v f") 'vc-git-grep)
+
+
+  
+  ;;; git-svn support
+
+  (require-package 'magit-svn)
+  (autoload 'magit-svn-enabled "magit-svn")
+  (defun sanityinc/maybe-enable-magit-svn-mode ()
+    (when (magit-svn-enabled)
+      (magit-svn-mode)))
+  (add-hook 'magit-status-mode-hook #'sanityinc/maybe-enable-magit-svn-mode)
+
+  (after-load 'compile
+    (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
+                        '(git-svn-needs-update "^\\(.*\\): needs update$" 1 nil nil 2 1)))
+      (add-to-list 'compilation-error-regexp-alist-alist defn)
+      (add-to-list 'compilation-error-regexp-alist (car defn))))
+
+  (defvar git-svn--available-commands nil "Cached list of git svn subcommands")
+  (defun git-svn--available-commands ()
+    (or git-svn--available-commands
+        (setq git-svn--available-commands
+              (sanityinc/string-all-matches
+               "^  \\([a-z\\-]+\\) +"
+               (shell-command-to-string "git svn help") 1))))
+
+  (defun git-svn (dir command)
+    "Run a git svn subcommand in DIR."
+    (interactive (list (read-directory-name "Directory: ")
+                       (completing-read "git-svn command: " (git-svn--available-commands) nil t nil nil (git-svn--available-commands))))
+    (let* ((default-directory (vc-git-root dir))
+           (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
+      (compile (concat "git svn " command))))
+
+  
+  (require-package 'git-messenger)
+  (global-set-key (kbd "C-x v p") #'git-messenger:popup-message)
+
+
+  ;; On Windows, Git needs to ask for a password.
+  ;; Ensure that Git on Windows is in the path.
+  (when *is-windows*
+    (setenv "GIT_ASKPASS" "git-gui--askpass"))
+
+#+end_src
+
+**** Github
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
+
+#+begin_src emacs-lisp
+  (require 'init-git)
+
+  (require-package 'yagist)
+  (require-package 'github-browse-file)
+  (require-package 'bug-reference-github)
+  (add-hook 'prog-mode-hook 'bug-reference-prog-mode)
+
+  (maybe-require-package 'github-clone)
+  (maybe-require-package 'magit-gh-pulls)
+
+#+end_src
+
+
+*** Window manipulation
 
 #+begin_src emacs-lisp
   (require-package 'golden-ratio)
@@ -1259,7 +1386,7 @@ Add discover mode, to learn dired.
 
 #+end_src
 
-** File manipulation
+*** File manipulation
 
 *** Delete file and buffer
 
@@ -1279,21 +1406,82 @@ From [[http://emacsredux.com/blog/2013/04/03/delete-file-and-buffer/]].
             (kill-buffer))))))
 #+end_src
 
+
+*** Checking and spelling
+
+**** Flycheck
+
+From
+[[https://github.com/purcell/emacs.d/blob/master/lisp/init-flycheck.el]].
+
+#+begin_src emacs-lisp
+  (when (maybe-require-package 'flycheck)
+    (add-hook 'after-init-hook 'global-flycheck-mode)
+
+    ;; Override default flycheck triggers
+    (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled)
+          flycheck-idle-change-delay 0.8)
+
+    (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+#+end_src
+
+
+**** Spelling
+
+From
+[[https://github.com/purcell/emacs.d/blob/master/lisp/init-spelling.el]].
+
+#+begin_src emacs-lisp
+  (require 'ispell)
+
+  (when *is-my-desktop* (add-to-list 'exec-path "C:/Program Files (x86)/Aspell/bin/"))
+
+  (when (executable-find ispell-program-name)
+    (require 'init-flyspell))
+#+end_src
+
+
+**** Flyspell
+
+From
+[[https://github.com/purcell/emacs.d/blob/master/lisp/init-flyspell.el]].
+
+#+begin_src emacs-lisp
+  ;;----------------------------------------------------------------------------
+  ;; Add spell-checking in comments for all programming language modes
+  ;;----------------------------------------------------------------------------
+  (if (fboundp 'prog-mode)
+      (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+    (dolist (hook '(lisp-mode-hook
+                    emacs-lisp-mode-hook
+                    scheme-mode-hook
+                    clojure-mode-hook
+                    ruby-mode-hook
+                    yaml-mode
+                    python-mode-hook
+                    shell-mode-hook
+                    php-mode-hook
+                    css-mode-hook
+                    haskell-mode-hook
+                    caml-mode-hook
+                    nxml-mode-hook
+                    crontab-mode-hook
+                    perl-mode-hook
+                    tcl-mode-hook
+                    javascript-mode-hook))
+      (add-hook hook 'flyspell-prog-mode)))
+
+  (after-load 'flyspell
+    (add-to-list 'flyspell-prog-text-faces 'nxml-text-face))
+
+#+end_src
+
+
 * Unmigrated init here
 
 
 #+BEGIN_SRC emacs-lisp
 
-
-
-  (require 'init-company)
-  (require 'init-vc)
-  (require 'init-git)
-  (require 'init-github)
-  ;; (require 'init-js)
-  (require 'init-flycheck)
-  (require 'init-spelling)
-  (require 'init-flyspell)
   (require 'init-javascript)
   (require 'init-python)
   (require 'init-lisp)
