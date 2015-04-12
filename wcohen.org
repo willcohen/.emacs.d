@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-11 23:41:46 wcohen>
+# Time-stamp: <2015-04-12 00:36:54 wcohen>
 
 * Configuration
 ** About this file
@@ -373,7 +373,6 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-gui-frames.el]].
 *** Windows-specific issues
 
 On Windows, fix errors with unsafe directories in Emacs server.
-
 #+begin_src emacs-lisp
   (require 'server)
   (when *is-windows* (defun server-ensure-safe-dir (dir) "Noop" t))
@@ -861,6 +860,11 @@ From
                      (lambda (s1 s2) (eq (random 2) 0)))))))
 
 
+
+
+
+
+
   
 
   (require-package 'highlight-escape-sequences)
@@ -875,7 +879,204 @@ From
 #+end_src
 
 
+*** Paredit
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-paredit.el]].
+
+#+begin_src emacs-lisp
+  (require-package 'paredit)
+  (autoload 'enable-paredit-mode "paredit")
+
+  (defun maybe-map-paredit-newline ()
+    (unless (or (memq major-mode '(inferior-emacs-lisp-mode cider-repl-mode))
+                (minibufferp))
+      (local-set-key (kbd "RET") 'paredit-newline)))
+
+  (add-hook 'paredit-mode-hook 'maybe-map-paredit-newline)
+
+  (after-load 'paredit
+    (diminish 'paredit-mode " Par")
+    (dolist (binding (list (kbd "C-<left>") (kbd "C-<right>")
+                           (kbd "C-M-<left>") (kbd "C-M-<right>")))
+      (define-key paredit-mode-map binding nil))
+
+    ;; Disable kill-sentence, which is easily confused with the kill-sexp
+    ;; binding, but doesn't preserve sexp structure
+    (define-key paredit-mode-map [remap kill-sentence] nil)
+    (define-key paredit-mode-map [remap backward-kill-sentence] nil)
+
+    ;; Allow my global binding of M-? to work when paredit is active
+    (define-key paredit-mode-map (kbd "M-?") nil))
+
+
+  ;; Compatibility with other modes
+
+  (suspend-mode-during-cua-rect-selection 'paredit-mode)
+
+
+  ;; Use paredit in the minibuffer
+  ;; TODO: break out into separate package
+  ;; http://emacsredux.com/blog/2013/04/18/evaluate-emacs-lisp-in-the-minibuffer/
+  (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
+
+  (defvar paredit-minibuffer-commands '(eval-expression
+                                        pp-eval-expression
+                                        eval-expression-with-eldoc
+                                        ibuffer-do-eval
+                                        ibuffer-do-view-and-eval)
+    "Interactive commands for which paredit should be enabled in the minibuffer.")
+
+  (defun conditionally-enable-paredit-mode ()
+    "Enable paredit during lisp-related minibuffer commands."
+    (if (memq this-command paredit-minibuffer-commands)
+        (enable-paredit-mode)))
+
+  ;; ----------------------------------------------------------------------------
+  ;; Enable some handy paredit functions in all prog modes
+  ;; ----------------------------------------------------------------------------
+
+  (require-package 'paredit-everywhere)
+  (add-hook 'prog-mode-hook 'paredit-everywhere-mode)
+  (add-hook 'css-mode-hook 'paredit-everywhere-mode)
+
+#+end_src
+
+*** R
+
+Packages to install when not Windows.
+
+
+#+begin_src emacs-lisp
+  (when (not *is-windows*) (require-package 'ess))
+#+end_src
+
+*** Postgres
+
+Set up sql-postgres mode to by default as for ports as well
+
+#+begin_src emacs-lisp
+  (setq sql-postgres-login-params
+        '((user :default "postgres")
+          (database :default "postgres")
+          (server :default "localhost")
+          (port :default 5432)))
+
+  ;;; On Windows, use the Cygwin psql client instead (and be sure it is
+  ;;; installed).
+
+  (when *is-my-desktop*
+    (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
+#+end_src
+
+*** TRAMP for remote editing
+
+On Windows, use PuTTY/plink to open files, using the following
+syntax. Be sure that PuTTY's folder is in the Windows path.
+/plink:user@remotehost:/remotepath
+/plink:user@remotehost|sudo:remotehost:/remotepath
+
+#+begin_src emacs-lisp
+  (require 'tramp)
+  (when *is-my-desktop*
+    (setq tramp-default-method "plink")
+    )
+#+end_src
+
+*** Fonts
+
+Note that the OTF of Inconsolata on Windows looks blurry, so use
+OTF on Mac (and Linux?) and TTF on Windows.
+
+On my laptop
+#+begin_src emacs-lisp
+  (when *is-my-laptop*
+    (set-face-attribute 'default nil :font "Inconsolata-14")
+    )
+#+end_src
+
+On my desktop
+#+begin_src emacs-lisp
+  (when *is-my-desktop*
+    (set-face-attribute 'default nil :font "Source Code Pro-10")
+    )
+#+end_src
+
+*** Helm
+
+#+begin_src emacs-lisp
+  (require-package 'helm)
+  (require-package 'helm-projectile)
+
+  ;;; HELM
+
+  (require 'helm)
+  (require 'helm-config)
+
+  ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+  ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+  ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-unset-key (kbd "C-x c"))
+
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+  (when (executable-find "curl")
+    (setq helm-google-suggest-use-curl-p t))
+
+  (setq helm-split-window-in-side-p t ; open helm buffer inside current
+                                          ; window, not occupy whole other
+                                          ; window
+        helm-move-to-line-cycle-in-source t ; move to end or beginning
+                                          ; of source when reaching top
+                                          ; or bottom of source.
+        helm-ff-search-library-in-sexp t ; search for library in
+                                          ; `require' and
+                                          ; `declare-function' sexp.
+        helm-scroll-amount 8 ; scroll 8 lines other window using
+                                          ; M-<next>/M-<prior>
+        helm-ff-file-name-history-use-recentf t)
+
+  (helm-mode 1)
+
+  (helm-autoresize-mode t)
+
+  (defun pl/helm-alive-p ()
+    (if (boundp 'helm-alive-p)
+        (symbol-value 'helm-alive-p)))
+
+  ;;; Improved M-x
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
+
+  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+
+  ;;; Helm-mini
+  (global-set-key (kbd "C-x b") 'helm-mini)
+  (setq helm-buffers-fuzzy-matching t
+        helm-recentf-fuzzy-match    t)
+
+  ;;; Helm-locate needs to identify es.exe on Windows
+  (when *is-windows* (add-to-list 'load-path "~/bin"))
+
+  ;;; Helm - Open in Finder / Explorer
+  (when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
+
+  ;;; Helm Projectile
+
+  (projectile-global-mode)
+  (setq projectile-completion-system 'helm)
+  (helm-projectile-on)
+
+
+#+end_src
+
+
+
 ** Org
+
+**
 
 *** Templates
 
@@ -917,6 +1118,147 @@ Accordingly, follow the directions from [[http://wenshanren.org/?p%3D781][here]]
     (font-lock-fontify-buffer))
 #+end_src
 
+** Interactivity
+
+*** Discover mode
+
+Add discover mode, to learn dired.
+
+#+begin_src emacs-lisp
+  (require 'discover)
+  (global-discover-mode 1)
+#+end_src
+
+*** Company mode
+
+#+begin_src emacs-lisp
+  (require-package 'company)
+
+  (require 'company)
+
+  (add-hook 'after-init-hook 'global-company-mode)
+
+#+end_src
+
+** Window manipulation
+
+#+begin_src emacs-lisp
+  (require-package 'golden-ratio)
+  (require-package 'winner)
+  (require-package 'switch-window)
+
+
+  ;;----------------------------------------------------------------------------
+  ;; Navigate window layouts with "C-c <left>" and "C-c <right>"
+  ;;----------------------------------------------------------------------------
+  (winner-mode 1)
+
+
+  ;;; Golden Ratio
+
+  (require 'golden-ratio)
+
+  (setq golden-ratio-exclude-modes '("nh-map-mode" "nh-message-mode"
+                                     "nh-status-mode" "rmail-mode"
+                                     "rmail-summary-mode"
+                                     ;; fundamental-mode is added here because the
+                                     ;; temp buffers used by switch-window is
+                                     ;; fundamental-mode "fundamental-mode"
+                                     ))
+
+  (golden-ratio-mode 1)
+  (setq golden-ratio-auto-scale t)
+
+  ;;; Helm Autoresize and Golden Ratio can coexist
+
+  (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)
+
+  ;; Make "C-x o" prompt for a target window when there are more than 2
+
+  (require 'switch-window)
+  (setq switch-window-shortcut-style 'qwerty)
+  (defadvice switch-window
+      (around golden-ratio-resize-window activate)
+    (if (<= (length (window-list)) 3)
+        (call-interactively 'other-window)
+      ad-do-it)
+    (golden-ratio)
+    nil)
+  (global-set-key (kbd "C-x o") 'switch-window)
+
+
+
+  ;;----------------------------------------------------------------------------
+  ;; When splitting window, show (other-buffer) in the new window
+  ;;----------------------------------------------------------------------------
+  (defun split-window-func-with-other-buffer (split-function)
+    (lexical-let ((s-f split-function))
+      (lambda ()
+        (interactive)
+        (funcall s-f)
+        (set-window-buffer (next-window) (other-buffer)))))
+
+  (global-set-key "\C-x2" (split-window-func-with-other-buffer 'split-window-vertically))
+  (global-set-key "\C-x3" (split-window-func-with-other-buffer 'split-window-horizontally))
+
+  (defun sanityinc/toggle-delete-other-windows ()
+    "Delete other windows in frame if any, or restore previous window config."
+    (interactive)
+    (if (and winner-mode
+             (equal (selected-window) (next-window)))
+        (winner-undo)
+      (delete-other-windows)))
+
+  (global-set-key "\C-x1" 'sanityinc/toggle-delete-other-windows)
+
+  ;;----------------------------------------------------------------------------
+  ;; Rearrange split windows
+  ;;----------------------------------------------------------------------------
+  (defun split-window-horizontally-instead ()
+    (interactive)
+    (save-excursion
+      (delete-other-windows)
+      (funcall (split-window-func-with-other-buffer 'split-window-horizontally))))
+
+  (defun split-window-vertically-instead ()
+    (interactive)
+    (save-excursion
+      (delete-other-windows)
+      (funcall (split-window-func-with-other-buffer 'split-window-vertically))))
+
+  (global-set-key "\C-x|" 'split-window-horizontally-instead)
+  (global-set-key "\C-x_" 'split-window-vertically-instead)
+
+
+  ;; Next window and previous window
+
+  (defun prev-window ()
+    (interactive)
+    (other-window -1))
+
+  (define-key global-map (kbd "C-x p") 'prev-window)
+
+  ;; Borrowed from http://postmomentum.ch/blog/201304/blog-on-emacs
+  (defun sanityinc/split-window()
+    "Split the window to see the most recent buffer in the other window.
+  Call a second time to restore the original window configuration."
+    (interactive)
+    (if (eq last-command 'sanityinc/split-window)
+        (progn
+          (jump-to-register :sanityinc/split-window)
+          (setq this-command 'sanityinc/unsplit-window))
+      (window-configuration-to-register :sanityinc/split-window)
+      (switch-to-buffer-other-window nil)))
+
+  (global-set-key (kbd "<f7>") 'sanityinc/split-window)
+  (global-set-key (kbd "<f6>")
+                  (lambda ()
+                    (interactive)
+                    (switch-to-buffer nil)))
+
+
+#+end_src
+
 ** File manipulation
 
 *** Delete file and buffer
@@ -943,14 +1285,7 @@ From [[http://emacsredux.com/blog/2013/04/03/delete-file-and-buffer/]].
 #+BEGIN_SRC emacs-lisp
 
 
-    (require 'init-paredit)             ; Paredit, etc.
-  (require 'init-r)
-  (require 'init-postgres)
-  (require 'init-tramp)
-  (require 'init-fonts)
-  (require 'init-helm)
-  (require 'init-windows)
-  (require 'init-discover)
+
   (require 'init-company)
   (require 'init-vc)
   (require 'init-git)
