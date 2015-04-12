@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-11 22:38:38 wcohen>
+# Time-stamp: <2015-04-11 22:44:11 wcohen>
 
 * Configuration
 ** About this file
@@ -188,6 +188,8 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-utils.el]].
 
 *** Packages
 
+All the machinery for installing required packages.
+
 #+begin_src emacs-lisp
 
 (require 'package)
@@ -251,6 +253,22 @@ locate PACKAGE."
 (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 
 
+#+end_src
+
+*** Exec path
+
+Set up the =$PATH=.
+
+#+begin_src emacs-lisp
+(when *is-mac* (require-package 'exec-path-from-shell))
+
+(after-load 'exec-path-from-shell
+            (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE"))
+              (add-to-list 'exec-path-from-shell-variables var)))
+
+
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
 
 #+end_src
 
@@ -327,7 +345,7 @@ From [[http://emacsredux.com/blog/2013/04/03/delete-file-and-buffer/]].
 
 
   ;;; Bootstrapping
-  (require 'init-elpa)      ;; Machinery for installing required packages
+
   (require 'init-exec-path) ;; Set up $PATH
 
   (require-package 'wgrep)
