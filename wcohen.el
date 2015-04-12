@@ -806,6 +806,17 @@ With arg N, insert N newlines."
 (when *is-my-desktop*
   (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
 
+(require-package 'cider)
+
+;;; Clojure
+;;; Be sure that Leiningen is installed.
+;;; Add these lines to ~/.lein/profiles.clj
+;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]}}
+
+;;; Until leiningen is updated, also force nrepl 0.2.7
+;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]
+;;; :dependencies [[org.clojure/tools.nrepl "0.2.7"]]}}
+
 (require 'tramp)
 (when *is-my-desktop*
   (setq tramp-default-method "plink")
@@ -903,8 +914,291 @@ With arg N, insert N newlines."
 (defun org-font-lock-ensure ()
   (font-lock-fontify-buffer))
 
+(require-package 'json-mode)
+(maybe-require-package 'js2-mode)
+(maybe-require-package 'ac-js2)
+(maybe-require-package 'coffee-mode)
+(require-package 'js-comint)
+
+(defcustom preferred-javascript-mode
+  (first (remove-if-not #'fboundp '(js2-mode js-mode)))
+  "Javascript mode to use for .js files."
+  :type 'symbol
+  :group 'programming
+  :options '(js2-mode js-mode))
+(defvar preferred-javascript-indent-level 2)
+
+;; Need to first remove from list if present, since elpa adds entries too, which
+;; may be in an arbitrary order
+(eval-when-compile (require 'cl))
+(setq auto-mode-alist (cons `("\\.js\\(\\.erb\\)?\\'" . ,preferred-javascript-mode)
+                            (loop for entry in auto-mode-alist
+                                  unless (eq preferred-javascript-mode (cdr entry))
+                                  collect entry)))
+
+
+;; js2-mode
+(after-load 'js2-mode
+  ;; Disable js2 mode's syntax error highlighting by default...
+  (setq-default js2-mode-show-parse-errors nil
+                js2-mode-show-strict-warnings nil)
+  ;; ... but enable it if flycheck can't handle javascript
+  (autoload 'flycheck-get-checker-for-buffer "flycheck")
+  (defun sanityinc/disable-js2-checks-if-flycheck-active ()
+    (unless (flycheck-get-checker-for-buffer)
+      (set (make-local-variable 'js2-mode-show-parse-errors) t)
+      (set (make-local-variable 'js2-mode-show-strict-warnings) t)))
+  (add-hook 'js2-mode-hook 'sanityinc/disable-js2-checks-if-flycheck-active)
+
+  (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
+
+  (setq-default
+   js2-basic-offset preferred-javascript-indent-level
+   js2-bounce-indent-p nil)
+
+  (after-load 'js2-mode
+    (js2-imenu-extras-setup)))
+
+;; js-mode
+(setq-default js-indent-level preferred-javascript-indent-level)
+
+
+(add-to-list 'interpreter-mode-alist (cons "node" preferred-javascript-mode))
+
+
+;; Javascript nests {} and () a lot, so I find this helpful
+
+(require-package 'rainbow-delimiters)
+(dolist (hook '(js2-mode-hook js-mode-hook json-mode-hook))
+  (add-hook hook 'rainbow-delimiters-mode))
+
+
+
+;;; Coffeescript
+
+(after-load 'coffee-mode
+  (setq coffee-js-mode preferred-javascript-mode
+        coffee-tab-width preferred-javascript-indent-level))
+
+(when (fboundp 'coffee-mode)
+  (add-to-list 'auto-mode-alist '("\\.coffee\\.erb\\'" . coffee-mode)))
+
+;; ---------------------------------------------------------------------------
+;; Run and interact with an inferior JS via js-comint.el
+;; ---------------------------------------------------------------------------
+
+(setq inferior-js-program-command "js")
+
+(defvar inferior-js-minor-mode-map (make-sparse-keymap))
+(define-key inferior-js-minor-mode-map "\C-x\C-e" 'js-send-last-sexp)
+(define-key inferior-js-minor-mode-map "\C-\M-x" 'js-send-last-sexp-and-go)
+(define-key inferior-js-minor-mode-map "\C-cb" 'js-send-buffer)
+(define-key inferior-js-minor-mode-map "\C-c\C-b" 'js-send-buffer-and-go)
+(define-key inferior-js-minor-mode-map "\C-cl" 'js-load-file-and-go)
+
+(define-minor-mode inferior-js-keys-mode
+  "Bindings for communicating with an inferior js interpreter."
+  nil " InfJS" inferior-js-minor-mode-map)
+
+(dolist (hook '(js2-mode-hook js-mode-hook))
+  (add-hook hook 'inferior-js-keys-mode))
+
+;; ---------------------------------------------------------------------------
+;; Alternatively, use skewer-mode
+;; ---------------------------------------------------------------------------
+
+(when (maybe-require-package 'skewer-mode)
+  (after-load 'skewer-mode
+    (add-hook 'skewer-mode-hook
+              (lambda () (inferior-js-keys-mode -1)))))
+
+(require-package 'elpy)
+
+(elpy-enable)
+
+(require-package 'geiser)
+
+(when *is-my-laptop*
+  (setq geiser-racket-binary
+        "/Applications/Racket v6.1.1/bin/racket"))
+
+(require-package 'web-mode)
+
+;;; Web-Mode (JavaScript/HTML in combined files)
+
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+
+;;; Web-Mode doesn't color hex codes in SCSS, so do this separately
+
+;;; This takes a color (later referenced in add-syntax-color-hex as
+;;; the background color), and chooses light or dark depending on how
+;;; light it is. This function is used in add-syntax-color-hex to
+;;; determine the foreground. This was adapted from web-mode.
+(defun syntax-colorize-foreground (color)
+  "Colorize foreground based on background luminance."
+  (let* ((values (x-color-values color))
+         (r (car values))
+         (g (cadr values))
+         (b (car (cdr (cdr values)))))
+    (if (> 128.0 (floor (+ (* .3 r) (* .59 g) (* .11 b)) 256))
+        "white" "black")))
+
+(defun add-syntax-color-hex ()
+  "Syntax color hex color spec such as 「#ff1100」 in current buffer."
+  (interactive)
+  (font-lock-add-keywords
+   nil
+   '(("#[abcdef[:digit:]]\\{3,6\\}"
+      (0 (put-text-property
+          (match-beginning 0)
+          (match-end 0)
+          'face (list :background (match-string-no-properties 0)
+                      :foreground (syntax-colorize-foreground
+                                   (match-string-no-properties
+                                    0))))))))
+  (font-lock-fontify-buffer)
+  )
+(add-hook 'css-mode-hook 'add-syntax-color-hex)
+
+;;; Web-Mode Indentation
+(defun web-mode-hook-settings ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-indent-style 2)
+  (setq web-mode-enable-auto-pairing t)
+  (setq web-mode-enable-css-colorization t)
+  (idle-highlight-mode 0)
+  ;;    (font-lock-mode 0)
+  )
+
+(add-hook 'web-mode-hook 'web-mode-hook-settings)
+
 (require 'discover)
 (global-discover-mode 1)
+
+(require-package 'company)
+
+(require 'company)
+
+(add-hook 'after-init-hook 'global-company-mode)
+
+(require-package 'diff-hl)
+(add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
+(add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode)
+
+(require-package 'magit)
+(require-package 'git-blame)
+(require-package 'git-commit-mode)
+(require-package 'git-rebase-mode)
+(require-package 'gitignore-mode)
+(require-package 'gitconfig-mode)
+(require-package 'git-messenger) ;; Though see also vc-annotate's "n" & "p" bindings
+(require-package 'git-timemachine)
+
+(setq-default
+ magit-save-some-buffers nil
+ magit-process-popup-time 10
+ magit-diff-refine-hunk t
+ magit-completing-read-function 'magit-ido-completing-read)
+
+;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
+;; quickly open magit on any one of your projects.
+(global-set-key [(meta f12)] 'magit-status)
+
+(after-load 'magit
+  (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-goto-parent-section))
+
+(require-package 'fullframe)
+(after-load 'magit
+  (fullframe magit-status magit-mode-quit-window))
+
+(add-hook 'git-commit-mode-hook 'goto-address-mode)
+(after-load 'session
+  (add-to-list 'session-mode-disable-list 'git-commit-mode))
+
+
+;;; When we start working on git-backed files, use git-wip if available
+
+(after-load 'magit
+  (when (executable-find magit-git-executable)
+    (global-magit-wip-save-mode)
+    (diminish 'magit-wip-save-mode)))
+
+(after-load 'magit
+  (diminish 'magit-auto-revert-mode))
+
+
+(when *is-mac*
+  (after-load 'magit
+    (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
+
+
+
+;; Convenient binding for vc-git-grep
+(global-set-key (kbd "C-x v f") 'vc-git-grep)
+
+
+
+;;; git-svn support
+
+(require-package 'magit-svn)
+(autoload 'magit-svn-enabled "magit-svn")
+(defun sanityinc/maybe-enable-magit-svn-mode ()
+  (when (magit-svn-enabled)
+    (magit-svn-mode)))
+(add-hook 'magit-status-mode-hook #'sanityinc/maybe-enable-magit-svn-mode)
+
+(after-load 'compile
+  (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
+                      '(git-svn-needs-update "^\\(.*\\): needs update$" 1 nil nil 2 1)))
+    (add-to-list 'compilation-error-regexp-alist-alist defn)
+    (add-to-list 'compilation-error-regexp-alist (car defn))))
+
+(defvar git-svn--available-commands nil "Cached list of git svn subcommands")
+(defun git-svn--available-commands ()
+  (or git-svn--available-commands
+      (setq git-svn--available-commands
+            (sanityinc/string-all-matches
+             "^  \\([a-z\\-]+\\) +"
+             (shell-command-to-string "git svn help") 1))))
+
+(defun git-svn (dir command)
+  "Run a git svn subcommand in DIR."
+  (interactive (list (read-directory-name "Directory: ")
+                     (completing-read "git-svn command: " (git-svn--available-commands) nil t nil nil (git-svn--available-commands))))
+  (let* ((default-directory (vc-git-root dir))
+         (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
+    (compile (concat "git svn " command))))
+
+
+(require-package 'git-messenger)
+(global-set-key (kbd "C-x v p") #'git-messenger:popup-message)
+
+
+;; On Windows, Git needs to ask for a password.
+;; Ensure that Git on Windows is in the path.
+(when *is-windows*
+  (setenv "GIT_ASKPASS" "git-gui--askpass"))
+
+(require 'init-git)
+
+(require-package 'yagist)
+(require-package 'github-browse-file)
+(require-package 'bug-reference-github)
+(add-hook 'prog-mode-hook 'bug-reference-prog-mode)
+
+(maybe-require-package 'github-clone)
+(maybe-require-package 'magit-gh-pulls)
 
 (require-package 'company)
 
@@ -1037,22 +1331,48 @@ Call a second time to restore the original window configuration."
           (message "Deleted file %s" filename)
           (kill-buffer))))))
 
-(require 'init-company)
-(require 'init-vc)
-(require 'init-git)
-(require 'init-github)
-;; (require 'init-js)
-(require 'init-flycheck)
-(require 'init-spelling)
-(require 'init-flyspell)
-(require 'init-javascript)
-(require 'init-python)
-(require 'init-lisp)
-(require 'init-web)
-(require 'init-company)
+(when (maybe-require-package 'flycheck)
+  (add-hook 'after-init-hook 'global-flycheck-mode)
 
+  ;; Override default flycheck triggers
+  (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled)
+        flycheck-idle-change-delay 0.8)
 
-;; Extra packages which don't require any configuration
+  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+
+(require 'ispell)
+
+(when *is-my-desktop* (add-to-list 'exec-path "C:/Program Files (x86)/Aspell/bin/"))
+
+(when (executable-find ispell-program-name)
+  (require 'init-flyspell))
+
+;;----------------------------------------------------------------------------
+;; Add spell-checking in comments for all programming language modes
+;;----------------------------------------------------------------------------
+(if (fboundp 'prog-mode)
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+  (dolist (hook '(lisp-mode-hook
+                  emacs-lisp-mode-hook
+                  scheme-mode-hook
+                  clojure-mode-hook
+                  ruby-mode-hook
+                  yaml-mode
+                  python-mode-hook
+                  shell-mode-hook
+                  php-mode-hook
+                  css-mode-hook
+                  haskell-mode-hook
+                  caml-mode-hook
+                  nxml-mode-hook
+                  crontab-mode-hook
+                  perl-mode-hook
+                  tcl-mode-hook
+                  javascript-mode-hook))
+    (add-hook hook 'flyspell-prog-mode)))
+
+(after-load 'flyspell
+  (add-to-list 'flyspell-prog-text-faces 'nxml-text-face))
 
 (require-package 'htmlize)
 (require-package 'regex-tool)
@@ -1072,11 +1392,25 @@ Call a second time to restore the original window configuration."
 (when (file-exists-p custom-file)
   (load custom-file))
 
+(defun sanityinc/utf8-locale-p (v)
+  "Return whether locale string V relates to a UTF-8 locale."
+  (and v (string-match "UTF-8" v)))
 
-;;----------------------------------------------------------------------------
-;; Locales (setting them earlier in this file doesn't work in X)
-;;----------------------------------------------------------------------------
-(require 'init-locales)
+(defun locale-is-utf8-p ()
+  "Return t iff the \"locale\" command or environment variables prefer UTF-8."
+  (or (sanityinc/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
+      (sanityinc/utf8-locale-p (getenv "LC_ALL"))
+      (sanityinc/utf8-locale-p (getenv "LC_CTYPE"))
+      (sanityinc/utf8-locale-p (getenv "LANG"))))
+
+(when (or window-system (locale-is-utf8-p))
+  (setq utf-translate-cjk-mode nil) ; disable CJK coding/encoding (Chinese/Japanese/Korean characters)
+  (set-language-environment 'utf-8)
+  (setq locale-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-selection-coding-system (if (eq system-type 'windows-nt) 'utf-16-le 'utf-8))
+  (prefer-coding-system 'utf-8))
 
 (add-hook 'after-init-hook
           (lambda ()

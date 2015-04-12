@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-12 01:12:33 wcohen>
+# Time-stamp: <2015-04-12 01:29:01 wcohen>
 
 * Configuration
 ** About this file
@@ -968,6 +968,23 @@ Set up sql-postgres mode to by default as for ports as well
     (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
 #+end_src
 
+
+*** Clojure
+
+#+begin_src emacs-lisp
+  (require-package 'cider)
+
+  ;;; Clojure
+  ;;; Be sure that Leiningen is installed.
+  ;;; Add these lines to ~/.lein/profiles.clj
+  ;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]}}
+
+  ;;; Until leiningen is updated, also force nrepl 0.2.7
+  ;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]
+  ;;; :dependencies [[org.clojure/tools.nrepl "0.2.7"]]}}
+
+#+end_src
+
 *** TRAMP for remote editing
 
 On Windows, use PuTTY/plink to open files, using the following
@@ -1114,6 +1131,203 @@ Accordingly, follow the directions from [[http://wenshanren.org/?p%3D781][here]]
 #+begin_src emacs-lisp
   (defun org-font-lock-ensure ()
     (font-lock-fontify-buffer))
+#+end_src
+
+*** Javascript
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-javascript.el]].
+
+#+begin_src emacs-lisp
+  (require-package 'json-mode)
+  (maybe-require-package 'js2-mode)
+  (maybe-require-package 'ac-js2)
+  (maybe-require-package 'coffee-mode)
+  (require-package 'js-comint)
+
+  (defcustom preferred-javascript-mode
+    (first (remove-if-not #'fboundp '(js2-mode js-mode)))
+    "Javascript mode to use for .js files."
+    :type 'symbol
+    :group 'programming
+    :options '(js2-mode js-mode))
+  (defvar preferred-javascript-indent-level 2)
+
+  ;; Need to first remove from list if present, since elpa adds entries too, which
+  ;; may be in an arbitrary order
+  (eval-when-compile (require 'cl))
+  (setq auto-mode-alist (cons `("\\.js\\(\\.erb\\)?\\'" . ,preferred-javascript-mode)
+                              (loop for entry in auto-mode-alist
+                                    unless (eq preferred-javascript-mode (cdr entry))
+                                    collect entry)))
+
+
+  ;; js2-mode
+  (after-load 'js2-mode
+    ;; Disable js2 mode's syntax error highlighting by default...
+    (setq-default js2-mode-show-parse-errors nil
+                  js2-mode-show-strict-warnings nil)
+    ;; ... but enable it if flycheck can't handle javascript
+    (autoload 'flycheck-get-checker-for-buffer "flycheck")
+    (defun sanityinc/disable-js2-checks-if-flycheck-active ()
+      (unless (flycheck-get-checker-for-buffer)
+        (set (make-local-variable 'js2-mode-show-parse-errors) t)
+        (set (make-local-variable 'js2-mode-show-strict-warnings) t)))
+    (add-hook 'js2-mode-hook 'sanityinc/disable-js2-checks-if-flycheck-active)
+
+    (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
+
+    (setq-default
+     js2-basic-offset preferred-javascript-indent-level
+     js2-bounce-indent-p nil)
+
+    (after-load 'js2-mode
+      (js2-imenu-extras-setup)))
+
+  ;; js-mode
+  (setq-default js-indent-level preferred-javascript-indent-level)
+
+
+  (add-to-list 'interpreter-mode-alist (cons "node" preferred-javascript-mode))
+
+  
+  ;; Javascript nests {} and () a lot, so I find this helpful
+
+  (require-package 'rainbow-delimiters)
+  (dolist (hook '(js2-mode-hook js-mode-hook json-mode-hook))
+    (add-hook hook 'rainbow-delimiters-mode))
+
+
+  
+  ;;; Coffeescript
+
+  (after-load 'coffee-mode
+    (setq coffee-js-mode preferred-javascript-mode
+          coffee-tab-width preferred-javascript-indent-level))
+
+  (when (fboundp 'coffee-mode)
+    (add-to-list 'auto-mode-alist '("\\.coffee\\.erb\\'" . coffee-mode)))
+
+  ;; ---------------------------------------------------------------------------
+  ;; Run and interact with an inferior JS via js-comint.el
+  ;; ---------------------------------------------------------------------------
+
+  (setq inferior-js-program-command "js")
+
+  (defvar inferior-js-minor-mode-map (make-sparse-keymap))
+  (define-key inferior-js-minor-mode-map "\C-x\C-e" 'js-send-last-sexp)
+  (define-key inferior-js-minor-mode-map "\C-\M-x" 'js-send-last-sexp-and-go)
+  (define-key inferior-js-minor-mode-map "\C-cb" 'js-send-buffer)
+  (define-key inferior-js-minor-mode-map "\C-c\C-b" 'js-send-buffer-and-go)
+  (define-key inferior-js-minor-mode-map "\C-cl" 'js-load-file-and-go)
+
+  (define-minor-mode inferior-js-keys-mode
+    "Bindings for communicating with an inferior js interpreter."
+    nil " InfJS" inferior-js-minor-mode-map)
+
+  (dolist (hook '(js2-mode-hook js-mode-hook))
+    (add-hook hook 'inferior-js-keys-mode))
+
+  ;; ---------------------------------------------------------------------------
+  ;; Alternatively, use skewer-mode
+  ;; ---------------------------------------------------------------------------
+
+  (when (maybe-require-package 'skewer-mode)
+    (after-load 'skewer-mode
+      (add-hook 'skewer-mode-hook
+                (lambda () (inferior-js-keys-mode -1)))))
+
+
+#+end_src
+
+*** Python
+
+Use elpy. In addition to the package for emacs, need to install =jedi=
+and =flake8= using =pip=.
+
+#+begin_src emacs-lisp
+  (require-package 'elpy)
+
+  (elpy-enable)
+
+#+end_src
+
+*** Lisp
+
+Scheme and Racket
+
+#+begin_src emacs-lisp
+  (require-package 'geiser)
+
+  (when *is-my-laptop*
+    (setq geiser-racket-binary
+          "/Applications/Racket v6.1.1/bin/racket"))
+
+#+end_src
+
+*** Web
+
+#+begin_src emacs-lisp
+  (require-package 'web-mode)
+
+  ;;; Web-Mode (JavaScript/HTML in combined files)
+
+  (require 'web-mode)
+  (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+
+  ;;; Web-Mode doesn't color hex codes in SCSS, so do this separately
+
+  ;;; This takes a color (later referenced in add-syntax-color-hex as
+  ;;; the background color), and chooses light or dark depending on how
+  ;;; light it is. This function is used in add-syntax-color-hex to
+  ;;; determine the foreground. This was adapted from web-mode.
+  (defun syntax-colorize-foreground (color)
+    "Colorize foreground based on background luminance."
+    (let* ((values (x-color-values color))
+           (r (car values))
+           (g (cadr values))
+           (b (car (cdr (cdr values)))))
+      (if (> 128.0 (floor (+ (* .3 r) (* .59 g) (* .11 b)) 256))
+          "white" "black")))
+
+  (defun add-syntax-color-hex ()
+    "Syntax color hex color spec such as 「#ff1100」 in current buffer."
+    (interactive)
+    (font-lock-add-keywords
+     nil
+     '(("#[abcdef[:digit:]]\\{3,6\\}"
+        (0 (put-text-property
+            (match-beginning 0)
+            (match-end 0)
+            'face (list :background (match-string-no-properties 0)
+                        :foreground (syntax-colorize-foreground
+                                     (match-string-no-properties
+                                      0))))))))
+    (font-lock-fontify-buffer)
+    )
+  (add-hook 'css-mode-hook 'add-syntax-color-hex)
+
+  ;;; Web-Mode Indentation
+  (defun web-mode-hook-settings ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-css-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
+    (setq web-mode-indent-style 2)
+    (setq web-mode-enable-auto-pairing t)
+    (setq web-mode-enable-css-colorization t)
+    (idle-highlight-mode 0)
+    ;;    (font-lock-mode 0)
+    )
+
+  (add-hook 'web-mode-hook 'web-mode-hook-settings)
+
 #+end_src
 
 ** Interactivity
@@ -1266,6 +1480,16 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
 
 #+end_src
 
+*** Company mode
+
+#+begin_src emacs-lisp
+  (require-package 'company)
+
+  (require 'company)
+
+  (add-hook 'after-init-hook 'global-company-mode)
+
+#+end_src
 
 *** Window manipulation
 
@@ -1477,20 +1701,11 @@ From
 #+end_src
 
 
-* Unmigrated init here
+** Final configuration
 
+*** Packages needing no configuration
 
-#+BEGIN_SRC emacs-lisp
-
-  (require 'init-javascript)
-  (require 'init-python)
-  (require 'init-lisp)
-  (require 'init-web)
-  (require 'init-company)
-
-
-  ;; Extra packages which don't require any configuration
-
+#+begin_src emacs-lisp
   (require-package 'htmlize)
   (require-package 'regex-tool)
 
@@ -1509,11 +1724,32 @@ From
   (when (file-exists-p custom-file)
     (load custom-file))
 
+#+end_src
 
-  ;;----------------------------------------------------------------------------
-  ;; Locales (setting them earlier in this file doesn't work in X)
-  ;;----------------------------------------------------------------------------
-  (require 'init-locales)
+*** Locales
+
+Setting these earlier in the file does not work.
+
+#+begin_src emacs-lisp
+  (defun sanityinc/utf8-locale-p (v)
+    "Return whether locale string V relates to a UTF-8 locale."
+    (and v (string-match "UTF-8" v)))
+
+  (defun locale-is-utf8-p ()
+    "Return t iff the \"locale\" command or environment variables prefer UTF-8."
+    (or (sanityinc/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
+        (sanityinc/utf8-locale-p (getenv "LC_ALL"))
+        (sanityinc/utf8-locale-p (getenv "LC_CTYPE"))
+        (sanityinc/utf8-locale-p (getenv "LANG"))))
+
+  (when (or window-system (locale-is-utf8-p))
+    (setq utf-translate-cjk-mode nil) ; disable CJK coding/encoding (Chinese/Japanese/Korean characters)
+    (set-language-environment 'utf-8)
+    (setq locale-coding-system 'utf-8)
+    (set-default-coding-systems 'utf-8)
+    (set-terminal-coding-system 'utf-8)
+    (set-selection-coding-system (if (eq system-type 'windows-nt) 'utf-16-le 'utf-8))
+    (prefer-coding-system 'utf-8))
 
   (add-hook 'after-init-hook
             (lambda ()
@@ -1523,6 +1759,11 @@ From
 
   (provide 'init)
 
+#+end_src
+
+** Variables set by custom
+
+#+begin_src emacs-lisp
   (custom-set-variables
    ;; custom-set-variables was added by Custom.
    ;; If you edit it by hand, you could mess it up, so be careful.
@@ -1537,5 +1778,4 @@ From
    ;; Your init file should contain only one such instance.
    ;; If there is more than one, they won't work right.
    )
-
-#+END_SRC
+#+end_src
