@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-11 22:44:11 wcohen>
+# Time-stamp: <2015-04-11 23:15:29 wcohen>
 
 * Configuration
 ** About this file
@@ -40,7 +40,7 @@ Pin it to taskbar, modify the shortcut to =runemacs.exe= instead of
 shell can be switched to cygwin =bash= if desired.
 
 
-** Bootstrapping the init
+** Adding elisp directory
 
 Until the whole file gets migrated to =org-babel=, all of the
 supporting lisp files need to get added to path.
@@ -190,6 +190,8 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-utils.el]].
 
 All the machinery for installing required packages.
 
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-elpa.el]].
+
 #+begin_src emacs-lisp
 
 (require 'package)
@@ -259,6 +261,8 @@ locate PACKAGE."
 
 Set up the =$PATH=.
 
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-exec-path.el]].
+
 #+begin_src emacs-lisp
 (when *is-mac* (require-package 'exec-path-from-shell))
 
@@ -271,6 +275,204 @@ Set up the =$PATH=.
   (exec-path-from-shell-initialize))
 
 #+end_src
+
+*** Additional required packages to initialize first
+
+#+begin_src emacs-lisp
+  (require-package 'wgrep)
+  (require-package 'project-local-variables)
+  (require-package 'diminish)
+  (require-package 'scratch)
+  (require-package 'mwe-log-commands)
+#+end_src
+
+*** GUI Features
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-gui-frames.el]].
+
+#+begin_src emacs-lisp
+;;----------------------------------------------------------------------------
+;; Stop C-z from minimizing windows under OS X
+;;----------------------------------------------------------------------------
+(defun sanityinc/maybe-suspend-frame ()
+  (interactive)
+  (unless (and *is-mac* window-system)
+    (suspend-frame)))
+
+(global-set-key (kbd "C-z") 'sanityinc/maybe-suspend-frame)
+
+
+;;----------------------------------------------------------------------------
+;; Suppress GUI features
+;;----------------------------------------------------------------------------
+(setq use-file-dialog nil)
+(setq use-dialog-box nil)
+(setq inhibit-startup-screen t)
+(setq inhibit-startup-echo-area-message t)
+
+
+;;----------------------------------------------------------------------------
+;; Show a marker in the left fringe for lines not in the buffer
+;;----------------------------------------------------------------------------
+(setq indicate-empty-lines t)
+
+
+;;----------------------------------------------------------------------------
+;; Window size and features
+;;----------------------------------------------------------------------------
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (fboundp 'set-scroll-bar-mode)
+  (set-scroll-bar-mode nil))
+
+(let ((no-border '(internal-border-width . 0)))
+  (add-to-list 'default-frame-alist no-border)
+  (add-to-list 'initial-frame-alist no-border))
+
+(defun sanityinc/adjust-opacity (frame incr)
+  "Adjust the background opacity of FRAME by increment INCR."
+  (unless (display-graphic-p frame)
+    (error "Cannot adjust opacity of this frame"))
+  (let* ((oldalpha (or (frame-parameter frame 'alpha) 100))
+         ;; The 'alpha frame param became a pair at some point in
+         ;; emacs 24.x, e.g. (100 100)
+         (oldalpha (if (listp oldalpha) (car oldalpha) oldalpha))
+         (newalpha (+ incr oldalpha)))
+    (when (and (<= frame-alpha-lower-limit newalpha) (>= 100 newalpha))
+      (modify-frame-parameters frame (list (cons 'alpha newalpha))))))
+
+(setq ns-use-native-fullscreen nil)
+(when (and *is-mac* (fboundp 'toggle-frame-fullscreen))
+  ;; Command-Option-f to toggle fullscreen mode
+  ;; Hint: Customize `ns-use-native-fullscreen'
+  (global-set-key (kbd "M-s-ƒ") 'toggle-frame-fullscreen))
+
+;; TODO: use seethru package instead?
+(global-set-key (kbd "M-C-8") (lambda () (interactive) (sanityinc/adjust-opacity nil -2)))
+(global-set-key (kbd "M-C-9") (lambda () (interactive) (sanityinc/adjust-opacity nil 2)))
+(global-set-key (kbd "M-C-0") (lambda () (interactive) (modify-frame-parameters nil `((alpha . 100)))))
+
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (with-selected-frame frame
+              (unless window-system
+                (set-frame-parameter nil 'menu-bar-lines 0)))))
+
+(setq frame-title-format
+      '((:eval (if (buffer-file-name)
+                   (abbreviate-file-name (buffer-file-name))
+                 "%b"))))
+
+;; Non-zero values for `line-spacing' can mess up ansi-term and co,
+;; so we zero it explicitly in those cases.
+(add-hook 'term-mode-hook
+          (lambda ()
+            (setq line-spacing 0)))
+#+end_src
+
+*** Windows-specific issues
+
+On Windows, fix errors with unsafe directories in Emacs server.
+
+#+begin_src emacs-lisp
+  (require 'server)
+  (when *is-windows* (defun server-ensure-safe-dir (dir) "Noop" t))
+#+end_src
+
+*** Mac-specific issues
+
+#+begin_src emacs-lisp
+  ;;; Fix hard-links on Mac
+  (when *is-mac*
+    (setq backup-by-copying-when-linked t))
+
+  (setq mac-command-modifier 'super)
+  (setq mac-option-modifier 'meta)
+
+  (defun swap-meta-and-super ()
+    "Swap the mapping of meta and super. Very useful for people using their Mac
+  with a Windows external keyboard from time to time."
+    (interactive)
+    (if (eq mac-command-modifier 'super)
+        (progn
+          (setq mac-command-modifier 'meta)
+          (setq mac-option-modifier 'super)
+          (message "Command is now bound to META and Option is bound to SUPER."))
+      (progn
+        (setq mac-command-modifier 'super)
+        (setq mac-option-modifier 'meta)
+        (message "Command is now bound to SUPER and Option is bound to META."))))
+
+  (global-set-key (kbd "C-c w") 'swap-meta-and-super)
+#+end_src
+
+*** Miscellaneous shortcuts
+
+#+begin_src emacs-lisp
+  (require-package 'guru-mode)
+  (require-package 'deft)
+
+  ;;; Turn on time-stamp updating. Timestamp must be in first 8 lines of
+  ;;;   file and look like:
+  ;;;   Time-stamp: <2015-03-25 13:28:59 wcohen>
+  (add-hook 'write-file-hooks 'time-stamp)
+
+  ;;; Get current system's name
+  (defun insert-system-name() (interactive)
+         "Get current system's name"
+         (insert (format "%s" system-name))
+         )
+
+  ;;; Get current system type
+  (defun insert-system-type() (interactive)
+         "Get current system type"
+         (insert (format "%s" system-type))
+         )
+
+  ;; Insertion of Dates.
+  (defun insert-date-string () (interactive)
+         "Insert a nicely formated date string"
+         (insert (format-time-string "%a %b %d %H:%M:%S %Y")))
+
+  ;;; Open init.el in the .emacs.d folder.
+  (defun find-dot-emacs () (interactive)
+         "Try to find and open the dot emacs file"
+         (let ((my-init-file (if (not user-init-file)
+                                 "~/.emacs.d/init.el"
+                               user-init-file)))
+           (find-file my-init-file)))
+
+
+  ;; C-c i calls insert-date-string
+  (global-set-key (kbd "C-c i") 'insert-date-string)
+
+  ;; C-c r reloads ~/.emacs.d/init.el
+  (global-set-key (kbd "C-c r")
+                  '(lambda ()
+                     (interactive)
+                     (load-file "~/.emacs.d/init.el")))
+
+
+  ;;; Guru
+
+  ;;; Enable guru-mode to stop using bad keybindings
+  (require 'guru-mode)
+  (guru-global-mode +1)
+
+  ;; To enable it only for modes like prog-mode
+  ;; (add-hook 'prog-mode-hook 'guru-mode)
+
+  ;; To get warnings only for arrow keys
+  (setq guru-warn-only t)
+
+  ;;; Deft (for notes)
+  (require 'deft)
+  (setq deft-use-filename-as-title t)
+#+end_src
+
+*** Text editing and fill-mode
+
+
 
 ** Org
 
@@ -340,24 +542,6 @@ From [[http://emacsredux.com/blog/2013/04/03/delete-file-and-buffer/]].
 #+BEGIN_SRC emacs-lisp
 
 
-  ;;; This file bootstraps the configuration and all its related files.
-
-
-
-  ;;; Bootstrapping
-
-  (require 'init-exec-path) ;; Set up $PATH
-
-  (require-package 'wgrep)
-  (require-package 'project-local-variables)
-  (require-package 'diminish)
-  (require-package 'scratch)
-  (require-package 'mwe-log-commands)
-
-  (require 'init-gui-frames)              ; GUI features
-  (require 'init-win32)                   ; Windows-specific issues
-  (require 'init-mac)                     ; Mac-specific issues
-  (require 'init-shortcuts)               ; Miscellaneous
   (require 'init-text)                    ; Fill mode
   (require 'init-indentation)             ; Indent after yanking
   (require 'init-themes)
