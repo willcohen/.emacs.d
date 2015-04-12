@@ -1,21 +1,24 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-11 19:51:42 wcohen>
+# Time-stamp: <2015-04-11 21:50:58 wcohen>
 
 * Configuration
 ** About this file
 <<babel-init>>
 
-Org-babel file for Emacs configuration, inspired by [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]].
+Org-babel file for Emacs configuration. Within org-mode, edit source
+blocks with C-c \' (=org-edit-special=).
 
-Within org-mode, open source blocks with =C-c \'= (=org-edit-special=).
+See [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]] for org-babel setup.
+
 
 ** Emacs installation
 
 *** Mac
 
 The best way to get an up-to-date version of emacs is using
-=homebrew=.
+=homebrew=. If the =git HEAD= version causes problems, install the
+latest stable version by omitting =--HEAD --use-git-head=.
 
 #+begin_example
 brew update
@@ -25,6 +28,161 @@ brew install emacs --HEAD --use-git-head --with-cocoa \
 -- with-gnutls --with-rsvg --with-imagemagick
 brew linkapps emacs
 #+end_example
+
+*** Windows
+
+ESS on Windows has to be installed without MELPA. Get it [[http://vgoulet.act.ulaval.ca/en/emacs/][here]].
+
+On Windows 7, after running emacs:
+Pin it to taskbar, modify the shortcut to =runemacs.exe= instead of
+=emacs.exe=, and set it to run in XP SP3 compatibility mode (so the
+shell can be switched to cygwin =bash= if desired.
+
+
+** Bootstrapping the init
+
+Until the whole file gets migrated to =org-babel=, all of the
+supporting lisp files need to get added to path.
+
+#+begin_src emacs-lisp
+  (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+#+end_src
+
+** Emacs initialization
+
+*** Benchmarking
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-benchmarking.el]].
+
+#+begin_src emacs-lisp
+  (defun wc/time-subtract-millis (b a)
+    (* 1000.0 (float-time (time-subtract b a))))
+
+
+  (defvar wc/require-times nil
+    "A list of (FEATURE . LOAD-DURATION).
+  LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
+
+  (defadvice require
+      (around build-require-times (feature &optional filename noerror) activate)
+    "Note in `wc/require-times' the time taken to require each feature."
+    (let* ((already-loaded (memq feature features))
+           (require-start-time (and (not already-loaded) (current-time))))
+      (prog1
+          ad-do-it
+        (when (and (not already-loaded) (memq feature features))
+          (add-to-list 'wc/require-times
+                       (cons feature
+                             (wc/time-subtract-millis (current-time)
+                                                             require-start-time))
+                       t)))))
+#+end_src
+
+*** Additional global variables
+
+#+begin_src emacs-lisp
+  (defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
+  (defconst *is-mac* (eq system-type 'darwin))
+  (defconst *is-linux* (eq system-type 'gnu/linux))
+  (defconst *is-windows* (eq system-type 'windows-nt))
+  (defconst *is-my-laptop* (eq system-name 'Will-MacBookPro))
+  (defconst *is-my-desktop* (eq system-name 'UTILE-T1700-08))
+#+end_src
+
+*** Needed utilities
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-utils.el]].
+
+#+begin_src emacs-lisp
+  (if (fboundp 'with-eval-after-load)
+      (defalias 'after-load 'with-eval-after-load)
+    (defmacro after-load (feature &rest body)
+      "After FEATURE is loaded, evaluate BODY."
+      (declare (indent defun))
+      `(eval-after-load ,feature
+         '(progn ,@body))))
+
+
+  ;;----------------------------------------------------------------------------
+  ;; Handier way to add modes to auto-mode-alist
+  ;;----------------------------------------------------------------------------
+  (defun add-auto-mode (mode &rest patterns)
+    "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
+    (dolist (pattern patterns)
+      (add-to-list 'auto-mode-alist (cons pattern mode))))
+
+
+  ;;----------------------------------------------------------------------------
+  ;; String utilities missing from core emacs
+  ;;----------------------------------------------------------------------------
+  (defun wc/string-all-matches (regex str &optional group)
+    "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
+    (let ((result nil)
+          (pos 0)
+          (group (or group 0)))
+      (while (string-match regex str pos)
+        (push (match-string group str) result)
+        (setq pos (match-end group)))
+      result))
+
+  (defun wc/string-rtrim (str)
+    "Remove trailing whitespace from `STR'."
+    (replace-regexp-in-string "[ \t\n]+$" "" str))
+
+
+  ;;----------------------------------------------------------------------------
+  ;; Find the directory containing a given library
+  ;;----------------------------------------------------------------------------
+  (autoload 'find-library-name "find-func")
+  (defun wc/directory-of-library (library-name)
+    "Return the directory in which the `LIBRARY-NAME' load file is found."
+    (file-name-as-directory (file-name-directory (find-library-name library-name))))
+
+
+  ;;----------------------------------------------------------------------------
+  ;; Delete the current file
+  ;;----------------------------------------------------------------------------
+  (defun delete-this-file ()
+    "Delete the current file, and kill the buffer."
+    (interactive)
+    (or (buffer-file-name) (error "No file is currently being edited"))
+    (when (yes-or-no-p (format "Really delete '%s'?"
+                               (file-name-nondirectory buffer-file-name)))
+      (delete-file (buffer-file-name))
+      (kill-this-buffer)))
+
+
+  ;;----------------------------------------------------------------------------
+  ;; Rename the current file
+  ;;----------------------------------------------------------------------------
+  (defun rename-this-file-and-buffer (new-name)
+    "Renames both current buffer and file it's visiting to NEW-NAME."
+    (interactive "sNew name: ")
+    (let ((name (buffer-name))
+          (filename (buffer-file-name)))
+      (unless filename
+        (error "Buffer '%s' is not visiting a file!" name))
+      (if (get-buffer new-name)
+          (message "A buffer named '%s' already exists!" new-name)
+        (progn
+          (when (file-exists-p filename)
+            (rename-file filename new-name 1))
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)))))
+
+  ;;----------------------------------------------------------------------------
+  ;; Browse current HTML file
+  ;;----------------------------------------------------------------------------
+  (defun browse-current-file ()
+    "Open the current file as a URL using `browse-url'."
+    (interactive)
+    (let ((file-name (buffer-file-name)))
+      (if (tramp-tramp-file-p file-name)
+          (error "Cannot open tramp file")
+        (browse-url (concat "file://" file-name)))))
+
+
+#+end_src
 
 ** Org
 
@@ -53,33 +211,52 @@ Redefine =<l= to insert Emacs lisp block instead of LaTeX.
           ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
 #+end_src
 
+*** HTML Export
+
+Attempting to export to HTML gives the following error:
+
+#+begin_example
+  org-html-fontify-code: Wrong number of arguments: #[(_beg _end) "À " [font-lock-fontify-buffer] 1], 0
+#+end_example
+
+Accordingly, follow the directions from [[http://wenshanren.org/?p%3D781][here]].
+
+#+begin_src emacs-lisp
+  (defun org-font-lock-ensure ()
+    (font-lock-fontify-buffer))
+#+end_src
+
+** File manipulation
+
+*** Delete file and buffer
+
+From [[http://emacsredux.com/blog/2013/04/03/delete-file-and-buffer/]].
+
+#+begin_src emacs-lisp
+  (defun delete-file-and-buffer ()
+    "Kill the current buffer and deletes the file it is visiting."
+    (interactive)
+    (let ((filename (buffer-file-name)))
+      (when filename
+        (if (vc-backend filename)
+            (vc-delete-file filename)
+          (progn
+            (delete-file filename)
+            (message "Deleted file %s" filename)
+            (kill-buffer))))))
+#+end_src
+
 * Unmigrated init here
 
 
 #+BEGIN_SRC emacs-lisp
 
-  ;;; ESS on Windows needs to be installed without MELPA:
-  ;;; http://vgoulet.act.ulaval.ca/en/emacs/
-
-  ;;; On Windows 7, after running emacs:
-  ;;; Pin it to taskbar, modify the shortcut to runemacs.exe instead of emacs.exe
-  ;;; And set it to run in XP SP3 compatibility mode (so the shell can
-  ;;; be switched to cygwin bash if desired)
 
   ;;; This file bootstraps the configuration and all its related files.
 
-  (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-  (require 'init-benchmarking) ;; Measure startup time
 
-  (defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
-  (defconst *is-mac* (eq system-type 'darwin))
-  (defconst *is-linux* (eq system-type 'gnu/linux))
-  (defconst *is-windows* (eq system-type 'windows-nt))
-  (defconst *is-my-laptop* (eq system-name 'Will-MacBookPro))
-  (defconst *is-my-desktop* (eq system-name 'UTILE-T1700-08))
 
   ;;; Bootstrapping
-  (require 'init-utils)
   (require 'init-elpa)      ;; Machinery for installing required packages
   (require 'init-exec-path) ;; Set up $PATH
 
@@ -151,7 +328,7 @@ Redefine =<l= to insert Emacs lisp block instead of LaTeX.
   (add-hook 'after-init-hook
             (lambda ()
               (message "init completed in %.2fms"
-                       (sanityinc/time-subtract-millis after-init-time before-init-time))))
+                       (wc/time-subtract-millis after-init-time before-init-time))))
 
 
   (provide 'init)
