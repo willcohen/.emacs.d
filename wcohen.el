@@ -38,19 +38,11 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
     `(eval-after-load ,feature
        '(progn ,@body))))
 
-
-;;----------------------------------------------------------------------------
-;; Handier way to add modes to auto-mode-alist
-;;----------------------------------------------------------------------------
 (defun add-auto-mode (mode &rest patterns)
   "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
   (dolist (pattern patterns)
     (add-to-list 'auto-mode-alist (cons pattern mode))))
 
-
-;;----------------------------------------------------------------------------
-;; String utilities missing from core emacs
-;;----------------------------------------------------------------------------
 (defun wc/string-all-matches (regex str &optional group)
   "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
   (let ((result nil)
@@ -64,7 +56,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 (defun wc/string-rtrim (str)
   "Remove trailing whitespace from `STR'."
   (replace-regexp-in-string "[ \t\n]+$" "" str))
-
 
 ;;----------------------------------------------------------------------------
 ;; Find the directory containing a given library
@@ -122,6 +113,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 ;;; Set the repository list
 
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
+                         ("org" . "http://orgmode.org/elpa/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
 ;;; On-demand installation of packages
@@ -1219,7 +1211,7 @@ With arg N, insert N newlines."
   (insert "][more]]"))
 (global-set-key (kbd "<f6>") 'wc/yank-more)
 
-(defun my/org-insert-heading-for-next-day ()
+(defun wc/org-insert-heading-for-next-day ()
   "Insert a same-level heading for the following day."
   (interactive)
   (let ((new-date
@@ -1230,7 +1222,7 @@ With arg N, insert N newlines."
     (org-insert-heading-after-current)
     (insert (format-time-string "%Y-%m-%d\n\n" new-date))))
 
-(defvar my/org-basic-task-template "* TODO %^{Task}
+(defvar wc/org-basic-task-template "* TODO %^{Task}
 SCHEDULED: %^t
 :PROPERTIES:
 :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
@@ -1240,7 +1232,7 @@ SCHEDULED: %^t
 (setq org-capture-templates
       `(("t" "Tasks" entry
          (file+headline "~/org/organizer.org" "Tasks")
-         ,my/org-basic-task-template)
+         ,wc/org-basic-task-template)
         ("T" "Quick task" entry
          (file+headline "~/org/organizer.org" "Tasks")
          "* TODO %^{Task}"
@@ -1251,10 +1243,10 @@ SCHEDULED: %^t
         ;;  :immediate-finish t)
         ("b" "Business task" entry
          (file+headline "~/org/work.org" "Tasks")
-         ,my/org-basic-task-template)
+         ,wc/org-basic-task-template)
 ;;         ("p" "People task" entry
 ;;          (file+headline "~/personal/people.org" "Tasks")
-;;          ,my/org-basic-task-template)
+;;          ,wc/org-basic-task-template)
 ;;         ("j" "Journal entry" plain
 ;;          (file+datetree "~/personal/journal.org")
 ;;          "%K - %a\n%i\n%?\n"
@@ -1801,6 +1793,10 @@ this with to-do items than with projects or headings."
  magit-process-popup-time 10
  magit-diff-refine-hunk t
  magit-completing-read-function 'magit-ido-completing-read)
+
+;; Turn off new magit version warning
+
+(setq magit-last-seen-setup-instructions "1.4.0")
 
 ;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
 ;; quickly open magit on any one of your projects.
