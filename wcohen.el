@@ -2061,9 +2061,12 @@ Call a second time to restore the original window configuration."
 ;;----------------------------------------------------------------------------
 ;; Allow access from emacsclient
 ;;----------------------------------------------------------------------------
-(require 'server)
-(unless (server-running-p)
-  (server-start))
+
+
+;; TODO: Diagnose why I needed to comment these out on windows
+;; (require 'server)
+;; (unless (server-running-p)
+;;   (server-start))
 
 
 ;;----------------------------------------------------------------------------

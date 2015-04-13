@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-13 07:01:26 wcohen>
+# Time-stamp: <2015-04-13 09:50:55 wcohen>
 
 * Configuration
 ** About this file
@@ -2726,9 +2726,12 @@ From
   ;;----------------------------------------------------------------------------
   ;; Allow access from emacsclient
   ;;----------------------------------------------------------------------------
-  (require 'server)
-  (unless (server-running-p)
-    (server-start))
+
+
+  ;; TODO: Diagnose why I needed to comment these out on windows
+  ;; (require 'server)
+  ;; (unless (server-running-p)
+  ;;   (server-start))
 
 
   ;;----------------------------------------------------------------------------
