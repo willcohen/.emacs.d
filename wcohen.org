@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-13 09:59:47 wcohen>
+# Time-stamp: <2015-04-13 10:02:18 wcohen>
 
 * Configuration
 ** About this file
@@ -2388,8 +2388,6 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-vc.el]]
 
 **** Git
 
-From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-git.el]].
-
 If, on Windows, git gives an error similar to =Couldn't reserve space
 for cygwin's heap=, then that means that the command line version of
 =git= has been updated.
@@ -2401,6 +2399,8 @@ Administrator, to =C:\Program Files (x86)\Git\bin=, and run the
 following command:
 
 =rebase -b 0x50000000 msys-1.0.dll=
+
+From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-git.el]].
 
 #+begin_src emacs-lisp
   (require-package 'magit)
