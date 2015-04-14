@@ -209,6 +209,8 @@ locate PACKAGE."
 (setq inhibit-startup-screen t)
 (setq inhibit-startup-echo-area-message t)
 
+; Make scratch empty
+(setq initial-scratch-message nil)
 
 ;;----------------------------------------------------------------------------
 ;; Show a marker in the left fringe for lines not in the buffer

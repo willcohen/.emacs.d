@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-04-13 10:02:18 wcohen>
+# Time-stamp: <2015-04-14 10:05:21 wcohen>
 
 * Configuration
 ** About this file
@@ -334,6 +334,8 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-gui-frames.el]].
 (setq inhibit-startup-screen t)
 (setq inhibit-startup-echo-area-message t)
 
+; Make scratch empty
+(setq initial-scratch-message nil)
 
 ;;----------------------------------------------------------------------------
 ;; Show a marker in the left fringe for lines not in the buffer
