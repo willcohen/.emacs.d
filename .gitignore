@@ -5,6 +5,7 @@ server
 .DS_Store
 .bookmarks.el
 .mc-lists.el
+cacert.pem
 ac-comphist.dat
 ido.last
 tramp
