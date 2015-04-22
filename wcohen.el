@@ -1426,16 +1426,6 @@ SCHEDULED: %^t
 
 (bind-key "Y" 'org-agenda-todo-yesterday org-agenda-mode-map)
 
-(require-package 'org-caldav)
-(require 'org-caldav)
-
-(setq org-caldav-url
-      "https://www.google.com/calendar/dav")
-(setq org-caldav-calendar-id "q1ll5o8mh680j5sa8tc69rkado@group.calendar.google.com")
-(setq org-caldav-inbox "~/org/gcal_in.org")
-;(setq org-caldav-files '())
-(setq org-icalendar-timezone "America/New_York")
-
 (defun wc/org-agenda-project-agenda ()
   "Return the project headline and up to `wc/org-agenda-limit-items' tasks."
   (save-excursion
