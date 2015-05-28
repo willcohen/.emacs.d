@@ -1,6 +1,4 @@
 
-(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-
 (defun wc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
 

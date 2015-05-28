@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-05-28 12:28:13 wcohen>
+# Time-stamp: <2015-05-28 12:33:32 wcohen>
 
 * Configuration
 ** About this file
@@ -8,7 +8,7 @@
 Org-babel file for Emacs configuration. Within org-mode, edit source
 blocks with C-c \' (=org-edit-special=).
 
-See [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]] for org-babel setup.
+See [[http://pages.sachachua.com/.emacs.d/Sacha.html][here]] for an explanation of org-babel setup.
 
 
 ** Emacs installation
@@ -36,15 +36,6 @@ On Windows 7, after running emacs:
 Pin it to taskbar, modify the shortcut to =runemacs.exe= instead of
 =emacs.exe=, and set it to run in XP SP3 compatibility mode (so the
 shell can be switched to cygwin =bash= if desired.
-
-** Adding elisp directory
-
-Until the whole file gets migrated to =org-babel=, all of the
-supporting lisp files need to get added to path.
-
-#+begin_src emacs-lisp
-  (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-#+end_src
 
 ** Emacs initialization
 
@@ -1455,7 +1446,7 @@ Add shortcut for =jump-to-register=.
 
 ** Org
 
-See [[http://pages.sachachua.com/.emacs.d/Sacha.html][Sacha Chua]] for org info.
+See [[http://pages.sachachua.com/.emacs.d/Sacha.html][here]] for org info.
 
 *** My files
 
@@ -1506,7 +1497,7 @@ From http://stackoverflow.com/questions/15011703/is-there-an-emacs-org-mode-comm
 #+end_src
 
 **** Link Org subtrees and navigate between them
-  The following code makes it easier for me to link trees with entries, as in http://sachachua.com/evil-plans
+  The following code makes it easier for me to link trees with entries
 
   #+begin_src emacs-lisp
   (defun wc/org-follow-entry-link ()
