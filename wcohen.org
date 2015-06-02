@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-05-28 12:33:32 wcohen>
+# Time-stamp: <2015-06-02 14:15:06 wcohen>
 
 * Configuration
 ** About this file
@@ -1043,6 +1043,11 @@ On my desktop
 #+end_src
 
 *** Helm
+
+Be sure that on Windows, the [[http://gnuwin32.sourceforge.net/packages.html][GnuWin32]] versions of =find= and =grep=
+are installed. Make sure its folder is added to the front of the
+system-wide path (for example, =C:\Program Files
+(x86)\GnuWin32\bin=).
 
 Initialize the packages.
 
