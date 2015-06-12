@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-06-04 14:40:19 wcohen>
+# Time-stamp: <2015-06-12 16:54:11 wcohen>
 
 * Configuration
 ** About this file
@@ -1293,6 +1293,12 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-javascript.el]].
 
 Use elpy. In addition to the package for emacs, need to install =jedi=
 and =flake8= using =pip=.
+
+If using [[http://continuum.io/downloads][Anaconda]] for Windows, elpy should work. However, I cannot
+currently get the different =conda= virtual environments to correlate
+with elpy, so choose the default Anaconda version for python2 or
+python3 depending on which you'd like to be able to integrate with
+elpy. Also, install using =conda install= instead of =pip=.
 
 #+begin_src emacs-lisp
   (require-package 'elpy)

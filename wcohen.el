@@ -1,4 +1,11 @@
 
+(defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
+(defconst *is-mac* (eq system-type 'darwin))
+(defconst *is-linux* (eq system-type 'gnu/linux))
+(defconst *is-windows* (eq system-type 'windows-nt))
+(defconst *is-my-laptop* (eq system-name 'Will-MacBookPro))
+(defconst *is-my-desktop* (eq system-name 'UTILE-T1700-08))
+
 (defun wc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
 
@@ -20,13 +27,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
                            (wc/time-subtract-millis (current-time)
                                                            require-start-time))
                      t)))))
-
-(defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
-(defconst *is-mac* (eq system-type 'darwin))
-(defconst *is-linux* (eq system-type 'gnu/linux))
-(defconst *is-windows* (eq system-type 'windows-nt))
-(defconst *is-my-laptop* (eq system-name 'Will-MacBookPro))
-(defconst *is-my-desktop* (eq system-name 'UTILE-T1700-08))
 
 (if (fboundp 'with-eval-after-load)
     (defalias 'after-load 'with-eval-after-load)
