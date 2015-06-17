@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-06-12 16:54:11 wcohen>
+# Time-stamp: <2015-06-17 09:36:14 wcohen>
 
 * Configuration
 ** About this file
@@ -1385,6 +1385,23 @@ Scheme and Racket
 
   (add-hook 'web-mode-hook 'web-mode-hook-settings)
 
+#+end_src
+
+*** Emmet
+
+An expander for HTML.
+
+#+begin_src emacs-lisp
+  (require-package 'emmet-mode)
+
+  ;; Auto-start on any markup modes
+  (add-hook 'sgml-mode-hook 'emmet-mode)
+  (add-hook 'web-mode-hook 'emmet-mode)
+
+  ;; Enable emmet's css abbrevation
+  (add-hook 'css-mode-hook  'emmet-mode)
+
+  (setq emmet-move-cursor-between-quotes t) ;; default nil
 #+end_src
 
 
