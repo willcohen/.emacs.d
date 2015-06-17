@@ -1071,6 +1071,17 @@ With arg N, insert N newlines."
 
 (add-hook 'web-mode-hook 'web-mode-hook-settings)
 
+(require-package 'emmet-mode)
+
+;; Auto-start on any markup modes
+(add-hook 'sgml-mode-hook 'emmet-mode)
+(add-hook 'web-mode-hook 'emmet-mode)
+
+;; Enable emmet's css abbrevation
+(add-hook 'css-mode-hook  'emmet-mode)
+
+(setq emmet-move-cursor-between-quotes t) ;; default nil
+
 (bind-key "C-x p" 'pop-to-mark-command)
 (setq set-mark-command-repeat-pop t)
 

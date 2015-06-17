@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-06-17 09:36:14 wcohen>
+# Time-stamp: <2015-06-17 09:39:33 wcohen>
 
 * Configuration
 ** About this file
@@ -1389,7 +1389,7 @@ Scheme and Racket
 
 *** Emmet
 
-An expander for HTML.
+An expander for HTML. Settings found [[https://github.com/smihica/emmet-mode][here]].
 
 #+begin_src emacs-lisp
   (require-package 'emmet-mode)
