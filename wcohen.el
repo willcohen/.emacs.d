@@ -1260,50 +1260,37 @@ SCHEDULED: %^t
 (add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
 (add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode)
 
-(require-package 'magit)
+;; TODO: link commits from vc-log to magit-show-commit
+;; TODO: smerge-mode
 (require-package 'git-blame)
-(require-package 'git-commit-mode)
-(require-package 'git-rebase-mode)
 (require-package 'gitignore-mode)
 (require-package 'gitconfig-mode)
 (require-package 'git-messenger) ;; Though see also vc-annotate's "n" & "p" bindings
 (require-package 'git-timemachine)
 
-(setq-default
- magit-save-some-buffers nil
- magit-process-popup-time 10
- magit-diff-refine-hunk t
- magit-completing-read-function 'magit-ido-completing-read)
 
-;; Turn off new magit version warning
+(when (maybe-require-package 'magit)
+  (setq-default
+   magit-process-popup-time 10
+   magit-diff-refine-hunk t
+   magit-completing-read-function 'magit-ido-completing-read)
 
-(setq magit-last-seen-setup-instructions "1.4.0")
-
-;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
-;; quickly open magit on any one of your projects.
-(global-set-key [(meta f12)] 'magit-status)
+  ;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
+  ;; quickly open magit on any one of your projects.
+  (global-set-key [(meta f12)] 'magit-status)
+  (global-set-key (kbd "C-x g") 'magit-status)
+  (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup))
 
 (after-load 'magit
-  (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-goto-parent-section))
+  (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-section-up)
+  (add-hook 'magit-popup-mode-hook 'wc/no-trailing-whitespace))
 
 (require-package 'fullframe)
 (after-load 'magit
   (fullframe magit-status magit-mode-quit-window))
 
-(add-hook 'git-commit-mode-hook 'goto-address-mode)
-(after-load 'session
-  (add-to-list 'session-mode-disable-list 'git-commit-mode))
-
-
-;;; When we start working on git-backed files, use git-wip if available
-
-(after-load 'magit
-  (when (executable-find magit-git-executable)
-    (global-magit-wip-save-mode)
-    (diminish 'magit-wip-save-mode)))
-
-(after-load 'magit
-  (diminish 'magit-auto-revert-mode))
+(when (maybe-require-package 'git-commit)
+  (add-hook 'git-commit-mode-hook 'goto-address-mode))
 
 
 (when *is-mac*
@@ -1319,12 +1306,13 @@ SCHEDULED: %^t
 
 ;;; git-svn support
 
-(require-package 'magit-svn)
-(autoload 'magit-svn-enabled "magit-svn")
-(defun wc/maybe-enable-magit-svn-mode ()
-  (when (magit-svn-enabled)
-    (magit-svn-mode)))
-(add-hook 'magit-status-mode-hook #'wc/maybe-enable-magit-svn-mode)
+;; (when (maybe-require-package 'magit-svn)
+;;   (require-package 'magit-svn)
+;;   (autoload 'magit-svn-enabled "magit-svn")
+;;   (defun wc/maybe-enable-magit-svn-mode ()
+;;     (when (magit-svn-enabled)
+;;       (magit-svn-mode)))
+;;   (add-hook 'magit-status-mode-hook #'wc/maybe-enable-magit-svn-mode))
 
 (after-load 'compile
   (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
