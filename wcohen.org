@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-07-15 19:25:19 wcohen>
+# Time-stamp: <2015-07-20 14:16:07 wcohen>
 
 * Configuration
 ** About this file
@@ -546,7 +546,7 @@ that functionality, they can be added in. If Prompt adds option as a
 meta key, this section can be removed.
 
 #+begin_src emacs-lisp
-  (define-key key-translation-map [?\C-h] [?\C-?]) ; Unmask 'delete' as backspace
+  ;(define-key key-translation-map [?\C-h] [?\C-?]) ; Unmask 'delete' as backspace
 
   (let ((translations '(     229 [?\M-a] nil [?\M-b] 231 [?\M-c]
                              8706 [?\M-d]  nil [?\M-e]   402 [?\M-f]
