@@ -379,7 +379,8 @@ with a Windows external keyboard from time to time."
 
   (add-hook 'after-init-hook 'zenburn-init)
 
-;(define-key key-translation-map [?\C-h] [?\C-?]) ; Unmask 'delete' as backspace
+(when (not window-system)
+  (define-key key-translation-map [?\C-h] [?\C-']))
 
 (let ((translations '(     229 [?\M-a] nil [?\M-b] 231 [?\M-c]
                            8706 [?\M-d]  nil [?\M-e]   402 [?\M-f]

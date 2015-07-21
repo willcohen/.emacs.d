@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-07-20 14:16:07 wcohen>
+# Time-stamp: <2015-07-21 09:43:46 wcohen>
 
 * Configuration
 ** About this file
@@ -540,14 +540,20 @@ the meta key.
 From [[http://apple.stackexchange.com/questions/48043/how-to-ssh-from-ipad-with-external-keyboard-and-emacs][stackexchange]], manually tell emacs how to bind all the option
 keybindings.
 
+This turns the help command into C-' on terminal commands, since C-h
+becomes DEL.
+
+#+begin_src emacs-lisp
+  (when (not window-system)
+    (define-key key-translation-map [?\C-h] [?\C-']))
+#+end_src
+
 Note that B, E, I, N, U and ` do not work, because those trigger
 chords that input multi-character sequences. If Prompt can disable
 that functionality, they can be added in. If Prompt adds option as a
 meta key, this section can be removed.
 
 #+begin_src emacs-lisp
-  ;(define-key key-translation-map [?\C-h] [?\C-?]) ; Unmask 'delete' as backspace
-
   (let ((translations '(     229 [?\M-a] nil [?\M-b] 231 [?\M-c]
                              8706 [?\M-d]  nil [?\M-e]   402 [?\M-f]
                              169 [?\M-g]   729 [?\M-h]   nil [?\M-i]
