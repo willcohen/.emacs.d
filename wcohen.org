@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-07-30 12:08:34 wcohen>
+# Time-stamp: <2015-07-30 12:17:04 wcohen>
 
 * Configuration
 ** About this file
@@ -1771,6 +1771,9 @@ following command:
 =rebase -b 0x50000000 msys-1.0.dll=
 
 From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-git.el]].
+Change =magit-completing-read-function= from
+='magit-ido-completing-read= to ='magit-builtin-completing-read=
+because I don't use =ido=.
 
 #+begin_src emacs-lisp
   ;; TODO: link commits from vc-log to magit-show-commit
@@ -1786,7 +1789,7 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-git.el]].
     (setq-default
      magit-process-popup-time 10
      magit-diff-refine-hunk t
-     magit-completing-read-function 'magit-ido-completing-read)
+     magit-completing-read-function 'magit-builtin-completing-read)
 
     ;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
     ;; quickly open magit on any one of your projects.
