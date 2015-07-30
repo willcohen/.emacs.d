@@ -4,7 +4,7 @@
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-windows* (eq system-type 'windows-nt))
 (defconst *is-my-laptop* (eq system-name 'Will-MacBookPro))
-(defconst *is-my-desktop* (eq system-name 'UTILE-T1700-08))
+(defconst *is-my-desktop* (string-match system-name "UTILE-T1700-08"))
 
 (defun wc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
