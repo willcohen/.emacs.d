@@ -356,6 +356,8 @@ with a Windows external keyboard from time to time."
 
 (setq-default auto-fill-function 'do-auto-fill)
 
+(setq sentence-end-double-space nil)
+
 (dolist (command '(yank yank-pop))
   (eval `(defadvice ,command (after indent-region activate)
            (and (not current-prefix-arg)

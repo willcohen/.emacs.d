@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-07-30 12:17:04 wcohen>
+# Time-stamp: <2015-07-31 14:14:18 wcohen>
 
 * Configuration
 ** About this file
@@ -491,6 +491,13 @@ On Windows, fix errors with unsafe directories in Emacs server.
 
 #+begin_src emacs-lisp
   (setq-default auto-fill-function 'do-auto-fill)
+#+end_src
+
+Emacs by default expects two spaces between sentences. Change this to
+one.
+
+#+begin_src emacs-lisp
+  (setq sentence-end-double-space nil)
 #+end_src
 
 *** Indentation
