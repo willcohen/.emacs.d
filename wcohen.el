@@ -1038,6 +1038,7 @@ With arg N, insert N newlines."
 (elpy-enable)
 
 (require-package 'geiser)
+(require-package 'sicp)
 
 (when *is-my-laptop*
   (setq geiser-racket-binary

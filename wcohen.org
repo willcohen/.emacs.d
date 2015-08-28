@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-07-31 14:14:18 wcohen>
+# Time-stamp: <2015-08-28 17:00:57 wcohen>
 
 * Configuration
 ** About this file
@@ -1372,6 +1372,7 @@ Scheme and Racket
 
 #+begin_src emacs-lisp
   (require-package 'geiser)
+  (require-package 'sicp)
 
   (when *is-my-laptop*
     (setq geiser-racket-binary
