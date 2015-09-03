@@ -963,10 +963,11 @@ With arg N, insert N newlines."
   ;; Disable js2 mode's syntax error highlighting by default...
   (setq-default js2-mode-show-parse-errors nil
                 js2-mode-show-strict-warnings nil)
-  ;; ... but enable it if flycheck can't handle javascript
+  ;; ... but enable it if flycheck can't handle javascript or on windows
   (autoload 'flycheck-get-checker-for-buffer "flycheck")
   (defun wc/disable-js2-checks-if-flycheck-active ()
-    (unless (flycheck-get-checker-for-buffer)
+    ;; originally (unless (flycheck-get-checker-for-buffer)
+    (if (or *is-windows* (eq (flycheck-get-checker-for-buffer) nil))
       (set (make-local-variable 'js2-mode-show-parse-errors) t)
       (set (make-local-variable 'js2-mode-show-strict-warnings) t)))
   (add-hook 'js2-mode-hook 'wc/disable-js2-checks-if-flycheck-active)
@@ -1525,7 +1526,14 @@ Call a second time to restore the original window configuration."
   (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled)
         flycheck-idle-change-delay 0.8)
 
-  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+  (setq flycheck-display-errors-function
+        #'flycheck-display-error-messages-unless-error-list))
+
+;; From http://pastebin.com/bS8r3Euk
+;; Disable jshint on windows
+(when *is-windows*
+  (add-hook 'js2-mode-hook
+            (lambda () (setq flycheck-disabled-checkers '(javascript-jshint)))))
 
 (require 'ispell)
 
