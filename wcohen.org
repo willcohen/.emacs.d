@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-09-03 13:23:10 wcohen>
+# Time-stamp: <2015-09-14 19:34:35 wcohen>
 
 * Configuration
 ** About this file
@@ -1465,6 +1465,21 @@ An expander for HTML. Settings found [[https://github.com/smihica/emmet-mode][he
   (setq emmet-move-cursor-between-quotes t) ;; default nil
 #+end_src
 
+
+*** Markdown
+
+Add support for Markdown.
+
+#+begin_src emacs-lisp
+(require-package 'markdown-mode)
+
+(autoload 'markdown-mode "markdown-mode"
+   "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+
+#+end_src
 
 ** Navigation
 
