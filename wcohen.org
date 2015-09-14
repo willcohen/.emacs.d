@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-09-14 19:34:35 wcohen>
+# Time-stamp: <2015-09-14 19:40:08 wcohen>
 
 * Configuration
 ** About this file
@@ -1478,6 +1478,17 @@ Add support for Markdown.
 (add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+
+#+end_src
+
+*** YAML
+
+Add support for YAML.
+
+#+begin_src emacs-lisp
+(require-package 'yaml-mode)
+
+(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
 
 #+end_src
 
