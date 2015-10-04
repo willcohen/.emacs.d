@@ -850,7 +850,7 @@ With arg N, insert N newlines."
 ;;; Clojure
 ;;; Be sure that Leiningen is installed.
 ;;; Add these lines to ~/.lein/profiles.clj
-;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]}}
+;;; {:user {:plugins [[cider/cider-nrepl "0.9.1"]]}}
 
 ;;; Until leiningen is updated, also force nrepl 0.2.7
 ;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]
