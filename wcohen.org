@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-10-04 19:10:33 wcohen>
+# Time-stamp: <2015-10-19 16:54:06 wcohen>
 
 * Configuration
 ** About this file
@@ -1749,6 +1749,7 @@ of info.
 
 Insert blocks using =<s[TAB]=, etc.
 Redefine =<l= to insert Emacs lisp block instead of LaTeX.
+Define <r to insert R block.
 
 #+begin_src emacs-lisp
   (setq org-structure-template-alist
@@ -1765,8 +1766,38 @@ Redefine =<l= to insert Emacs lisp block instead of LaTeX.
           ("a" "#+begin_ascii\n?\n#+end_ascii")
           ("A" "#+ascii: ")
           ("i" "#+index: ?" "#+index: ?")
-          ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
+          ("I" "#+include %file ?" "<include file=%file markup=\"?\">")
+          ("r" "#+begin_src R\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
+          ("rs" "#+begin_src R :session\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
+          ))
 #+end_src
+
+*** Org-babel
+
+Enable org-babel for Emacs lisp and R.
+
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (R . t)))
+#+end_src
+
+Manually set the path to R for org-babel.
+
+#+begin_src emacs-lisp
+  (when *is-my-desktop*
+    (setq org-babel-R-command "C:/Progra~1/R/R-3.2.2/bin/R.exe
+    --slave --no-save --ess"))
+#+end_src
+
+Disable confirmation of running code blocks.
+
+#+begin_src emacs-lisp
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+
+#+RESULTS:
 
 ** Interactivity
 

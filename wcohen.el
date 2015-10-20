@@ -1296,7 +1296,21 @@ SCHEDULED: %^t
         ("a" "#+begin_ascii\n?\n#+end_ascii")
         ("A" "#+ascii: ")
         ("i" "#+index: ?" "#+index: ?")
-        ("I" "#+include %file ?" "<include file=%file markup=\"?\">")))
+        ("I" "#+include %file ?" "<include file=%file markup=\"?\">")
+        ("r" "#+begin_src R\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
+        ("rs" "#+begin_src R :session\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
+        ))
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (R . t)))
+
+(when *is-my-desktop*
+  (setq org-babel-R-command "C:/Progra~1/R/R-3.2.2/bin/R.exe
+  --slave --no-save --ess"))
+
+(setq org-confirm-babel-evaluate nil)
 
 (require-package 'company)
 
