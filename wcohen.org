@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-10-19 16:54:06 wcohen>
+# Time-stamp: <2015-11-03 20:07:56 wcohen>
 
 * Configuration
 ** About this file
@@ -1061,11 +1061,11 @@ Set up sql-postgres mode to by default as for ports as well
   ;;; Clojure
   ;;; Be sure that Leiningen is installed.
   ;;; Add these lines to ~/.lein/profiles.clj
-  ;;; {:user {:plugins [[cider/cider-nrepl "0.9.1"]]}}
+  ;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]}}
 
-  ;;; Until leiningen is updated, also force nrepl 0.2.7
-  ;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]
-  ;;; :dependencies [[org.clojure/tools.nrepl "0.2.7"]]}}
+  ;;; Also force nrepl 0.2.12
+  ;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]
+  ;;; :dependencies [[org.clojure/tools.nrepl "0.2.12"]]}}
 
 #+end_src
 
