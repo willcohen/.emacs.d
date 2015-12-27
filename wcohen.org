@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-11-03 20:07:56 wcohen>
+# Time-stamp: <2015-12-27 09:14:47 wcohen>
 
 * Configuration
 ** About this file
@@ -569,7 +569,7 @@ meta key, this section can be removed.
                              960 [?\M-p]   339 [?\M-q]   174 [?\M-r]
                              223 [?\M-s]   8224 [?\M-t]  nil [?\M-u]
                              8730 [?\M-v]  8721 [?\M-w]  8776 [?\M-x]
-                             165 [?\M-y]   937 [?\M-z]   96 [?\M-~]
+                             165 [?\M-y]   937 [?\M-z]   ;96 [?\M-~]
                              161 [?\M-1]   162 [?\M-4]   163 [?\M-3]
                              167 [?\M-6]   170 [?\M-9]   171 [?\M-\\]
                              175 [?\M-<]   176 [?\M-*]   177 [?\M-+]

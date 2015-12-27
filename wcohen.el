@@ -392,7 +392,7 @@ with a Windows external keyboard from time to time."
                            960 [?\M-p]   339 [?\M-q]   174 [?\M-r]
                            223 [?\M-s]   8224 [?\M-t]  nil [?\M-u]
                            8730 [?\M-v]  8721 [?\M-w]  8776 [?\M-x]
-                           165 [?\M-y]   937 [?\M-z]   96 [?\M-~]
+                           165 [?\M-y]   937 [?\M-z]   ;96 [?\M-~]
                            161 [?\M-1]   162 [?\M-4]   163 [?\M-3]
                            167 [?\M-6]   170 [?\M-9]   171 [?\M-\\]
                            175 [?\M-<]   176 [?\M-*]   177 [?\M-+]
@@ -850,11 +850,11 @@ With arg N, insert N newlines."
 ;;; Clojure
 ;;; Be sure that Leiningen is installed.
 ;;; Add these lines to ~/.lein/profiles.clj
-;;; {:user {:plugins [[cider/cider-nrepl "0.9.1"]]}}
+;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]}}
 
-;;; Until leiningen is updated, also force nrepl 0.2.7
-;;; {:user {:plugins [[cider/cider-nrepl "0.9.0-SNAPSHOT"]]
-;;; :dependencies [[org.clojure/tools.nrepl "0.2.7"]]}}
+;;; Also force nrepl 0.2.12
+;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]
+;;; :dependencies [[org.clojure/tools.nrepl "0.2.12"]]}}
 
 (require 'tramp)
 (when *is-my-desktop*
