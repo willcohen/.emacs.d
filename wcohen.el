@@ -1,10 +1,10 @@
 
+(load "~/.emacs.d/personal.el" t)
+
 (defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
 (defconst *is-mac* (eq system-type 'darwin))
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-windows* (eq system-type 'windows-nt))
-(defconst *is-my-laptop* (eq system-name 'Will-MacBookPro))
-(defconst *is-my-desktop* (string-match system-name "UTILE-T1700-08"))
 
 (defun wc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
@@ -842,7 +842,7 @@ With arg N, insert N newlines."
 ;;; On Windows, use the Cygwin psql client instead (and be sure it is
 ;;; installed).
 
-(when *is-my-desktop*
+(when *configured-windows*
   (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
 
 (require-package 'cider)
@@ -857,17 +857,40 @@ With arg N, insert N newlines."
 ;;; :dependencies [[org.clojure/tools.nrepl "0.2.12"]]}}
 
 (require 'tramp)
-(when *is-my-desktop*
+(when *configured-windows*
   (setq tramp-default-method "plink")
   )
 
-(when *is-my-laptop*
-  (set-face-attribute 'default nil :font "Inconsolata-14")
-  )
+(defun wc/first-available-font (&rest stack)
+  (loop for f in stack
+        if (member f (font-family-list))
+        do (return f)))
 
-(when *is-my-desktop*
-  (set-face-attribute 'default nil :font "Source Code Pro-10")
-  )
+(setq wc/font-fixed
+      (wc/first-available-font
+       "Inconsolata"
+       "Source Code Pro"
+       "Droid Sans Mono"
+       "Ubuntu Mono"
+       "Menlo"
+       "Monaco"
+       "fixed"
+       )
+      )
+
+(when *configured-mac*
+  (set-face-attribute 'default nil
+                      :family wc/font-fixed
+                      :height 140
+                      ; :weight 'light
+                      ))
+
+(when *configured-windows*
+  (set-face-attribute 'default nil
+                      :family wc/font-fixed
+                      :height 100
+                      ; :weight 'light
+                      ))
 
 (require-package 'helm)
  (require-package 'helm-projectile)
@@ -1041,7 +1064,7 @@ With arg N, insert N newlines."
 (require-package 'geiser)
 (require-package 'sicp)
 
-(when *is-my-laptop*
+(when *configured-mac*
   (setq geiser-racket-binary
         "/Applications/Racket v6.1.1/bin/racket"))
 
@@ -1306,7 +1329,7 @@ SCHEDULED: %^t
  '((emacs-lisp . t)
    (R . t)))
 
-(when *is-my-desktop*
+(when *configured-windows*
   (setq org-babel-R-command "C:/Progra~1/R/R-3.2.2/bin/R.exe
   --slave --no-save --ess"))
 
@@ -1563,7 +1586,8 @@ Call a second time to restore the original window configuration."
 
 (require 'ispell)
 
-(when *is-my-desktop* (add-to-list 'exec-path "C:/Program Files (x86)/Aspell/bin/"))
+(when *configured-windows* (add-to-list 'exec-path
+      "C:/Program Files (x86)/Aspell/bin/"))
 
 (when (executable-find ispell-program-name)
 ;;----------------------------------------------------------------------------

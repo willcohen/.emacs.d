@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-12-27 09:14:47 wcohen>
+# Time-stamp: <2015-12-28 20:43:31 wcohen>
 
 * Configuration
 ** About this file
@@ -39,6 +39,35 @@ shell can be switched to cygwin =bash= if desired.
 
 ** Emacs initialization
 
+*** Personal variables
+
+Before continuing, place the following code in a separate in your
+=emacs.d= directory called =personal.el=, and change the strings as
+needed. That file is not tracked by Git, and so those variables can be
+customized without deviating from the repository's history. You can set
+additional variables in that file as well. (The following code block
+is an example is not itself loaded.)
+
+Any sections of the Emacs configuration that uses these two variables
+means that if you set your computer name to this, you would need to
+actually configure your Mac or your Windows machine to reflect that
+setup, or Emacs will get frustrated.
+
+#+begin_src emacs-lisp :tangle no
+
+  (defconst *configured-mac* (string-match system-name "Wills-MBP"))
+  (defconst *configured-windows* (string-match system-name "UTILE-T1700-08"))
+
+#+end_src
+
+Now, this code will load that file into the emacs configuration.
+
+#+begin_src emacs-lisp
+
+  (load "~/.emacs.d/personal.el" t)
+
+#+end_src
+
 *** Global variables
 
 #+begin_src emacs-lisp
@@ -46,8 +75,6 @@ shell can be switched to cygwin =bash= if desired.
   (defconst *is-mac* (eq system-type 'darwin))
   (defconst *is-linux* (eq system-type 'gnu/linux))
   (defconst *is-windows* (eq system-type 'windows-nt))
-  (defconst *is-my-laptop* (eq system-name 'Will-MacBookPro))
-  (defconst *is-my-desktop* (string-match system-name "UTILE-T1700-08"))
 #+end_src
 
 
@@ -1049,7 +1076,7 @@ Set up sql-postgres mode to by default as for ports as well
   ;;; On Windows, use the Cygwin psql client instead (and be sure it is
   ;;; installed).
 
-  (when *is-my-desktop*
+  (when *configured-windows*
     (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
 #+end_src
 
@@ -1078,29 +1105,58 @@ syntax. Be sure that PuTTY's folder is in the Windows path.
 
 #+begin_src emacs-lisp
   (require 'tramp)
-  (when *is-my-desktop*
+  (when *configured-windows*
     (setq tramp-default-method "plink")
     )
 #+end_src
 
 *** Fonts
 
+Create a stack of fonts, so Emacs doesn't get upset if one is missing.
+
+#+begin_src emacs-lisp
+
+  (defun wc/first-available-font (&rest stack)
+    (loop for f in stack
+          if (member f (font-family-list))
+          do (return f)))
+
+  (setq wc/font-fixed
+        (wc/first-available-font
+         "Inconsolata"
+         "Source Code Pro"
+         "Droid Sans Mono"
+         "Ubuntu Mono"
+         "Menlo"
+         "Monaco"
+         "fixed"
+         )
+        )
+
+#+end_src
+
+Set my laptop font size to 14, and desktop to 10.
+
+#+begin_src emacs-lisp
+
+  (when *configured-mac*
+    (set-face-attribute 'default nil
+                        :family wc/font-fixed
+                        :height 140
+                        ; :weight 'light
+                        ))
+
+  (when *configured-windows*
+    (set-face-attribute 'default nil
+                        :family wc/font-fixed
+                        :height 100
+                        ; :weight 'light
+                        ))
+#+end_src
+
+
 Note that the OTF of Inconsolata on Windows looks blurry, so use
 OTF on Mac (and Linux?) and TTF on Windows.
-
-On my laptop
-#+begin_src emacs-lisp
-  (when *is-my-laptop*
-    (set-face-attribute 'default nil :font "Inconsolata-14")
-    )
-#+end_src
-
-On my desktop
-#+begin_src emacs-lisp
-  (when *is-my-desktop*
-    (set-face-attribute 'default nil :font "Source Code Pro-10")
-    )
-#+end_src
 
 *** Helm
 
@@ -1375,7 +1431,7 @@ Scheme and Racket
   (require-package 'geiser)
   (require-package 'sicp)
 
-  (when *is-my-laptop*
+  (when *configured-mac*
     (setq geiser-racket-binary
           "/Applications/Racket v6.1.1/bin/racket"))
 
@@ -1786,7 +1842,7 @@ Enable org-babel for Emacs lisp and R.
 Manually set the path to R for org-babel.
 
 #+begin_src emacs-lisp
-  (when *is-my-desktop*
+  (when *configured-windows*
     (setq org-babel-R-command "C:/Progra~1/R/R-3.2.2/bin/R.exe
     --slave --no-save --ess"))
 #+end_src
@@ -2129,7 +2185,8 @@ From
 #+begin_src emacs-lisp
   (require 'ispell)
 
-  (when *is-my-desktop* (add-to-list 'exec-path "C:/Program Files (x86)/Aspell/bin/"))
+  (when *configured-windows* (add-to-list 'exec-path
+        "C:/Program Files (x86)/Aspell/bin/"))
 
   (when (executable-find ispell-program-name)
   ;;----------------------------------------------------------------------------
