@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2015-12-28 20:43:31 wcohen>
+# Time-stamp: <2016-01-14 16:39:06 wcohen>
 
 * Configuration
 ** About this file
@@ -1244,16 +1244,19 @@ and helm-mini.
 
 #+begin_src emacs-lisp
 
-   ;;; Improved M-x
-   (global-set-key (kbd "M-x") 'helm-M-x)
-   (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
+  ;;; Improved M-x
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
 
-   (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
 
-   ;;; Helm-mini
-   (global-set-key (kbd "C-x b") 'helm-mini)
-   (setq helm-buffers-fuzzy-matching t
-         helm-recentf-fuzzy-match    t)
+  ;;; Helm-mini
+  (global-set-key (kbd "C-x b") 'helm-mini)
+  (setq helm-buffers-fuzzy-matching t
+        helm-recentf-fuzzy-match    t)
+
+  ;;; Helm-find-files
+  (global-set-key (kbd "C-x C-f") 'helm-find-files)
 
 #+end_src
 

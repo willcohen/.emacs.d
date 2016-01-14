@@ -940,6 +940,9 @@ With arg N, insert N newlines."
 (setq helm-buffers-fuzzy-matching t
       helm-recentf-fuzzy-match    t)
 
+;;; Helm-find-files
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+
 (when *is-windows* (add-to-list 'load-path "~/bin"))
 (when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
 
