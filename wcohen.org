@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-01-14 16:39:06 wcohen>
+# Time-stamp: <2016-07-06 18:03:54 wcohen>
 
 * Configuration
 ** About this file
@@ -1082,18 +1082,10 @@ Set up sql-postgres mode to by default as for ports as well
 
 *** Clojure
 
+Be sure that Leiningen is installed.
+
 #+begin_src emacs-lisp
   (require-package 'cider)
-
-  ;;; Clojure
-  ;;; Be sure that Leiningen is installed.
-  ;;; Add these lines to ~/.lein/profiles.clj
-  ;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]}}
-
-  ;;; Also force nrepl 0.2.12
-  ;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]
-  ;;; :dependencies [[org.clojure/tools.nrepl "0.2.12"]]}}
-
 #+end_src
 
 *** TRAMP for remote editing
