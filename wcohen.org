@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-07-06 18:03:54 wcohen>
+# Time-stamp: <2016-09-06 15:01:51 wcohen>
 
 * Configuration
 ** About this file
@@ -1449,6 +1449,8 @@ Scheme and Racket
   (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.php?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
 
   ;;; Web-Mode doesn't color hex codes in SCSS, so do this separately
 
@@ -1480,7 +1482,7 @@ Scheme and Racket
                                       0))))))))
     (font-lock-fontify-buffer)
     )
-  (add-hook 'css-mode-hook 'add-syntax-color-hex)
+  ;;; (add-hook 'css-mode-hook 'add-syntax-color-hex)
 
   ;;; Web-Mode Indentation
   (defun web-mode-hook-settings ()
@@ -1491,7 +1493,7 @@ Scheme and Racket
     (setq web-mode-indent-style 2)
     (setq web-mode-enable-auto-pairing t)
     (setq web-mode-enable-css-colorization t)
-    (idle-highlight-mode 0)
+    ;;    (idle-highlight-mode 0)
     ;;    (font-lock-mode 0)
     )
 

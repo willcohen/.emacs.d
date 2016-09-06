@@ -847,15 +847,6 @@ With arg N, insert N newlines."
 
 (require-package 'cider)
 
-;;; Clojure
-;;; Be sure that Leiningen is installed.
-;;; Add these lines to ~/.lein/profiles.clj
-;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]}}
-
-;;; Also force nrepl 0.2.12
-;;; {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]]
-;;; :dependencies [[org.clojure/tools.nrepl "0.2.12"]]}}
-
 (require 'tramp)
 (when *configured-windows*
   (setq tramp-default-method "plink")
@@ -1085,6 +1076,8 @@ With arg N, insert N newlines."
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.php?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
 
 ;;; Web-Mode doesn't color hex codes in SCSS, so do this separately
 
@@ -1116,7 +1109,7 @@ With arg N, insert N newlines."
                                     0))))))))
   (font-lock-fontify-buffer)
   )
-(add-hook 'css-mode-hook 'add-syntax-color-hex)
+;;; (add-hook 'css-mode-hook 'add-syntax-color-hex)
 
 ;;; Web-Mode Indentation
 (defun web-mode-hook-settings ()
@@ -1127,7 +1120,7 @@ With arg N, insert N newlines."
   (setq web-mode-indent-style 2)
   (setq web-mode-enable-auto-pairing t)
   (setq web-mode-enable-css-colorization t)
-  (idle-highlight-mode 0)
+  ;;    (idle-highlight-mode 0)
   ;;    (font-lock-mode 0)
   )
 
