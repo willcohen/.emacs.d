@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-15 07:01:55 wcohen>
+# Time-stamp: <2016-09-15 10:11:21 wcohen>
 
 * Configuration
 ** About this file
@@ -1346,6 +1346,7 @@ Main set of file types for Web Mode
   (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.js?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 #+end_src
 
 Additionally, set all js files to be seen as JSX, so that things like
@@ -1407,6 +1408,14 @@ Web-Mode Indentation
     )
 
   (add-hook 'web-mode-hook 'web-mode-hook-settings)
+#+end_src
+
+*** Javascript
+
+For anything that web-mode doesn't currently handle.
+
+#+begin_src emacs-lisp
+  (require-package 'json-mode)
 #+end_src
 
 *** Emmet
