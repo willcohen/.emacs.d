@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-15 01:49:33 wcohen>
+# Time-stamp: <2016-09-15 07:01:55 wcohen>
 
 * Configuration
 ** About this file
@@ -2077,7 +2077,28 @@ From
   ;; Disable jshint on windows
   (when *is-windows*
     (add-hook 'js2-mode-hook
-              (lambda () (setq flycheck-disabled-checkers '(javascript-jshint)))))
+              (lambda () (setq flycheck-disabled-checkers
+                          '(javascript-jshint)))))
+#+end_src
+
+From
+http://codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html
+
+#+begin_src emacs-lisp
+  (require 'flycheck)
+
+  ;; disable jshint since we prefer eslint checking
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(javascript-jshint)))
+
+
+  ;; use eslint with web-mode for jsx files
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+
+
+  ;; customize flycheck temp file prefix
+  (setq-default flycheck-temp-prefix ".flycheck")
 #+end_src
 
 
