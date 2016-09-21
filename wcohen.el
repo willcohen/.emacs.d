@@ -421,7 +421,17 @@ with a Windows external keyboard from time to time."
 (setq solarized-height-plus-3 1)
 (setq solarized-height-plus-4 1)
 
-(load-theme 'solarized-light)
+(defun solarized-init ()
+  (load-theme 'solarized-light)
+  )
+
+(add-hook 'after-init-hook 'solarized-init)
+
+(use-package spaceline
+  :ensure t
+  :config
+  (require 'spaceline-config)
+  (spaceline-emacs-theme))
 
 (when (not window-system)
   (define-key key-translation-map [?\C-h] [?\C-']))
@@ -916,7 +926,7 @@ With arg N, insert N newlines."
 (when *configured-mac*
   (set-face-attribute 'default nil
                       :family wc/font-fixed
-                      :height 140
+                      ; :height 140
                       ; :weight 'light
                       ))
 

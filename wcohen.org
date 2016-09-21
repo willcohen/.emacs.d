@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-21 16:40:18 wcohen>
+# Time-stamp: <2016-09-21 17:25:19 wcohen>
 
 * Configuration
 ** About this file
@@ -55,7 +55,7 @@ setup, or Emacs will get frustrated.
 
 #+begin_src emacs-lisp :tangle no
 
-  (defconst *configured-mac* (string-match system-name "Wills-MBP"))
+  (defconst *configured-mac* (string-match system-name "Wills-MacBook-Pro.local"))
   (defconst *configured-windows* (string-match system-name "UTILE-T1700-08"))
 
 #+end_src
@@ -608,7 +608,23 @@ Set default theme to solarized-light.
   (setq solarized-height-plus-3 1)
   (setq solarized-height-plus-4 1)
 
-  (load-theme 'solarized-light)
+  (defun solarized-init ()
+    (load-theme 'solarized-light)
+    )
+
+  (add-hook 'after-init-hook 'solarized-init)
+#+end_src
+
+*** Spaceline / Powerline
+
+Add the powerline from Spacemacs. See [[https://github.com/TheBB/spaceline][here]].
+
+#+begin_src emacs-lisp
+  (use-package spaceline
+    :ensure t
+    :config
+    (require 'spaceline-config)
+    (spaceline-emacs-theme))
 #+end_src
 
 *** iOS configuration
@@ -1185,7 +1201,7 @@ Set my laptop font size to 14, and desktop to 10.
   (when *configured-mac*
     (set-face-attribute 'default nil
                         :family wc/font-fixed
-                        :height 140
+                        ; :height 140
                         ; :weight 'light
                         ))
 
