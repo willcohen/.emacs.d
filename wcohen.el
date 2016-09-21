@@ -6,6 +6,24 @@
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-windows* (eq system-type 'windows-nt))
 
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/")
+             '("gnu" . "https://elpa.gnu.org/packages/"))
+
+(package-initialize)
+
+;; Bootstrap `use-package'
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)                ;; if you use :diminish
+(require 'bind-key)                ;; if you use any :bind variant
+
 (defun wc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
 
@@ -143,11 +161,11 @@ locate PACKAGE."
 
 ;;; Start package.el
 
-(setq package-enable-at-startup nil)
-(package-initialize)
+;(setq package-enable-at-startup nil)
+;(package-initialize)
 
-(require-package 'fullframe)
-(fullframe list-packages quit-window)
+;(require-package 'fullframe)
+;(fullframe list-packages quit-window)
 
 (require-package 'cl-lib)
 (require 'cl-lib)
@@ -883,74 +901,38 @@ With arg N, insert N newlines."
                       ; :weight 'light
                       ))
 
-(require-package 'helm)
- (require-package 'helm-projectile)
+(use-package ivy
+  :ensure t
+  :pin gnu)
 
-(require 'helm)
- (require 'helm-config)
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(global-set-key "\C-s" 'swiper)
+(global-set-key (kbd "C-c C-r") 'ivy-resume)
+(global-set-key (kbd "<f6>") 'ivy-resume)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+(global-set-key (kbd "<f1> f") 'counsel-describe-function)
+(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+(global-set-key (kbd "<f1> l") 'counsel-load-library)
+(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+(global-set-key (kbd "C-c g") 'counsel-git)
+(global-set-key (kbd "C-c j") 'counsel-git-grep)
+(global-set-key (kbd "C-c k") 'counsel-ag)
+(global-set-key (kbd "C-x l") 'counsel-locate)
+(global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+(define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
-(global-set-key (kbd "C-c h") 'helm-command-prefix)
-(global-unset-key (kbd "C-x c"))
-
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-
-(when (executable-find "curl")
-  (setq helm-google-suggest-use-curl-p t))
-
-(setq helm-split-window-in-side-p t ; open helm buffer inside current
-                                        ; window, not occupy whole other
-                                        ; window
-      helm-move-to-line-cycle-in-source t ; move to end or beginning
-                                        ; of source when reaching top
-                                        ; or bottom of source.
-      helm-ff-search-library-in-sexp t ; search for library in
-                                        ; `require' and
-                                        ; `declare-function' sexp.
-      helm-scroll-amount 8 ; scroll 8 lines other window using
-                                        ; M-<next>/M-<prior>
-      helm-ff-file-name-history-use-recentf t)
-
-(helm-mode 1)
-
-(helm-autoresize-mode t)
-
-(defun wc/helm-alive-p ()
-  (if (boundp 'helm-alive-p)
-      (symbol-value 'helm-alive-p)))
-
-;;; Improved M-x
-(global-set-key (kbd "M-x") 'helm-M-x)
-(setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
-
-(global-set-key (kbd "M-y") 'helm-show-kill-ring)
-
-;;; Helm-mini
-(global-set-key (kbd "C-x b") 'helm-mini)
-(setq helm-buffers-fuzzy-matching t
-      helm-recentf-fuzzy-match    t)
-
-;;; Helm-find-files
-(global-set-key (kbd "C-x C-f") 'helm-find-files)
-
-(when *is-windows* (add-to-list 'load-path "~/bin"))
-(when *is-windows* (global-set-key (kbd "C-c h o") 'helm-w32-shell-execute-open-file))
+(use-package projectile
+  :ensure t)
 
 (projectile-global-mode)
-(setq projectile-completion-system 'helm)
-(helm-projectile-on)
 
-(setq helm-candidate-number-limit 100)
-;; From https://gist.github.com/antifuchs/9238468
-(setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
-      helm-input-idle-delay 0.01  ; this actually updates things
-                                    ; reeeelatively quickly.
-      helm-quick-update t
-      helm-M-x-requires-pattern nil
-      helm-ff-skip-boring-files t)
+(use-package counsel-projectile
+  :ensure t)
 
-(ido-mode -1)
+(counsel-projectile-on)
 
 (require-package 'elpy)
 
@@ -1050,24 +1032,6 @@ With arg N, insert N newlines."
 
 (bind-key "C-x p" 'pop-to-mark-command)
 (setq set-mark-command-repeat-pop t)
-
-(use-package helm-swoop
-  :defer t
-  :ensure
-  :bind
- (("C-S-s" . helm-swoop)
-  ("M-i" . helm-swoop)
-  ("M-s s" . helm-swoop)
-  ("M-s M-s" . helm-swoop)
-  ("M-I" . helm-swoop-back-to-last-point)
-  ("C-c M-i" . helm-multi-swoop)
-  ("C-x M-i" . helm-multi-swoop-all)
-  )
- :config
- (progn
-   (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-   (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop))
-)
 
 (defvar wc/refile-map (make-sparse-keymap))
 
@@ -1338,7 +1302,7 @@ SCHEDULED: %^t
 (require 'discover)
 (global-discover-mode 1)
 
-(require-package 'golden-ratio)
+; (require-package 'golden-ratio)
 (require-package 'winner)
 (require-package 'switch-window)
 
@@ -1349,24 +1313,24 @@ SCHEDULED: %^t
 (winner-mode 1)
 
 
-;;; Golden Ratio
+;; ;;; Golden Ratio
 
-(require 'golden-ratio)
+;; (require 'golden-ratio)
 
-(setq golden-ratio-exclude-modes '("nh-map-mode" "nh-message-mode"
-                                   "nh-status-mode" "rmail-mode"
-                                   "rmail-summary-mode"
-                                   ;; fundamental-mode is added here because the
-                                   ;; temp buffers used by switch-window is
-                                   ;; fundamental-mode "fundamental-mode"
-                                   ))
+;; (setq golden-ratio-exclude-modes '("nh-map-mode" "nh-message-mode"
+;;                                    "nh-status-mode" "rmail-mode"
+;;                                    "rmail-summary-mode"
+;;                                    ;; fundamental-mode is added here because the
+;;                                    ;; temp buffers used by switch-window is
+;;                                    ;; fundamental-mode "fundamental-mode"
+;;                                    ))
 
-(golden-ratio-mode 1)
-(setq golden-ratio-auto-scale t)
+;; (golden-ratio-mode 1)
+;; (setq golden-ratio-auto-scale t)
 
-;;; Helm Autoresize and Golden Ratio can coexist
+;; ;;; Helm Autoresize and Golden Ratio can coexist
 
-(add-to-list 'golden-ratio-inhibit-functions 'wc/helm-alive-p)
+;; (add-to-list 'golden-ratio-inhibit-functions 'wc/helm-alive-p)
 
 ;; Make "C-x o" prompt for a target window when there are more than 2
 
@@ -1584,7 +1548,7 @@ Call a second time to restore the original window configuration."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (magit-gh-pulls github-clone bug-reference-github github-browse-file yagist magit-svn zenburn-theme whole-line-or-region whitespace-cleanup-mode wgrep web-mode unfill undo-tree tern-auto-complete switch-window scratch regex-tool rainbow-delimiters project-local-variables paredit-menu paredit-everywhere page-break-lines nodejs-repl mwe-log-commands multiple-cursors move-dup magit json-mode js3-mode js-comint htmlize highlight-symbol highlight-escape-sequences helm-projectile guru-mode guide-key golden-ratio gitignore-mode gitconfig-mode git-timemachine git-messenger git-blame geiser fullframe flycheck fill-column-indicator expand-region exec-path-from-shell ess elpy discover diminish diff-hl deft coffee-mode browse-kill-ring ace-jump-mode ac-js2))))
+    (magit-gh-pulls github-clone bug-reference-github github-browse-file yagist magit-svn zenburn-theme whole-line-or-region whitespace-cleanup-mode wgrep web-mode unfill undo-tree tern-auto-complete switch-window scratch regex-tool rainbow-delimiters project-local-variables paredit-menu paredit-everywhere page-break-lines nodejs-repl mwe-log-commands multiple-cursors move-dup magit json-mode js3-mode js-comint htmlize highlight-symbol highlight-escape-sequences guru-mode guide-key golden-ratio gitignore-mode gitconfig-mode git-timemachine git-messenger git-blame geiser fullframe flycheck fill-column-indicator expand-region exec-path-from-shell ess elpy discover diminish diff-hl deft coffee-mode browse-kill-ring ace-jump-mode ac-js2))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
