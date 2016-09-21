@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-20 20:59:54 wcohen>
+# Time-stamp: <2016-09-20 21:20:49 wcohen>
 
 * Configuration
 ** About this file
@@ -1179,7 +1179,7 @@ OTF on Mac (and Linux?) and TTF on Windows.
 #+begin_src emacs-lisp
   (use-package ivy
     :ensure t
-    :pin gnu)
+    :pin melpa)
 
   (ivy-mode 1)
   (setq ivy-use-virtual-buffers t)

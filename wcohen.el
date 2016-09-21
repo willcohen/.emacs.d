@@ -903,7 +903,7 @@ With arg N, insert N newlines."
 
 (use-package ivy
   :ensure t
-  :pin gnu)
+  :pin melpa)
 
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
