@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-20 21:20:49 wcohen>
+# Time-stamp: <2016-09-21 00:14:26 wcohen>
 
 * Configuration
 ** About this file
@@ -1347,6 +1347,102 @@ For anything that web-mode doesn't currently handle.
   (require-package 'json-mode)
 #+end_src
 
+*** Company mode
+
+#+begin_src emacs-lisp
+  (use-package company
+    :ensure t)
+
+  (require 'company)
+
+  (add-hook 'after-init-hook 'global-company-mode)
+
+#+end_src
+
+*** Java
+
+Use eclim, see [[http://www.goldsborough.me/emacs,/java/2016/02/24/22-54-16-setting_up_emacs_for_java_development/][here]].
+
+Download the non-installer version of Eclipse, and put it in the
+/Applications folder. See [[https://github.com/ervandew/eclim/issues/428][here]].
+
+Download the eclim installer and run it from the command line: =java
+-jar eclim_2.6.0.jar=.
+
+Then tell the eclim installer that the
+home directory is =/Applications/Eclipse.app/Contents/Eclipse/=.
+
+Then, install and activate =eclim=.
+#+begin_src emacs-lisp
+  (use-package eclim
+    :ensure t)
+
+  (require 'eclim)
+  (global-eclim-mode)
+  (require 'eclimd)
+
+  (setq eclimd-executable
+        "/Applications/Eclipse.app/Contents/Eclipse/eclimd")
+  (setq eclim-executable
+        "/Applications/Eclipse.app/Contents/Eclipse/eclim")
+#+end_src
+
+Add company mode support.
+
+#+begin_src emacs-lisp
+  (use-package company-emacs-eclim
+    :ensure t)
+  (company-emacs-eclim-setup)
+  (global-company-mode t)
+#+end_src
+
+Add gradle support.
+
+#+begin_src emacs-lisp
+  (use-package gradle-mode
+    :ensure t)
+
+  (add-hook 'java-mode-hook '(lambda() (gradle-mode 1)))
+
+
+  ; Might work -- haven't needed to try yet.
+
+  ; Commands to make grade more useful.
+  ;(defun build-and-run ()
+  ;  (interactive)
+  ;  (gradle-run "build run"))
+
+  ;(define-key gradle-mode-map (kbd "C-c C-r") 'build-and-run)
+
+  ; Gradle colors
+  ;(custom-set-faces
+   ;; ...
+   ;'(company-preview ((t (:background "black" :foreground "red"))))
+   ;'(company-preview-common ((t (:foreground "red"))))
+   ;'(company-preview-search ((t (:inherit company-preview))))
+   ;'(company-scrollbar-bg ((t (:background "brightwhite"))))
+   ;'(company-scrollbar-fg ((t (:background "red"))))
+   ;'(company-template-field ((t (:background "magenta" :foreground "black"))))
+   ;'(company-tooltip ((t (:background "brightwhite" :foreground "black"))))
+   ;'(company-tooltip-annotation ((t (:background "brightwhite" :foreground "black"))))
+   ;'(company-tooltip-annotation-selection ((t (:background "color-253"))))
+   ;'(company-tooltip-common ((t (:background "brightwhite" :foreground "red"))))
+   ;'(company-tooltip-common-selection ((t (:background "color-253" :foreground "red"))))
+   ;'(company-tooltip-mouse ((t (:foreground "black"))))
+   ;'(company-tooltip-search ((t (:background "brightwhite" :foreground "black"))))
+   ;'(company-tooltip-selection ((t (:background "color-253" :foreground
+   ;                                             "black"))))
+   ;; ...
+   ;)
+
+  ; When going over error with cursor, this command can select some
+  ;possible corrections
+  ;(define-key eclim-mode-map (kbd "C-c C-c") 'eclim-problems-correct)
+
+  ; M-x eclim-java-refactor-rename-symbol-at-point can rename symbols.
+  ; M-x eclim-java-refactor-move-class can move classes.
+#+end_src
+
 *** Emmet
 
 An expander for HTML. Settings found [[https://github.com/smihica/emmet-mode][here]].
@@ -1676,17 +1772,6 @@ Disable confirmation of running code blocks.
 #+RESULTS:
 
 ** Interactivity
-
-*** Company mode
-
-#+begin_src emacs-lisp
-  (require-package 'company)
-
-  (require 'company)
-
-  (add-hook 'after-init-hook 'global-company-mode)
-
-#+end_src
 
 *** Version control
 

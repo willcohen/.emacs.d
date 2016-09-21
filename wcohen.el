@@ -1007,6 +1007,73 @@ With arg N, insert N newlines."
 
 (require-package 'json-mode)
 
+(use-package company
+  :ensure t)
+
+(require 'company)
+
+(add-hook 'after-init-hook 'global-company-mode)
+
+(use-package eclim
+  :ensure t)
+
+(require 'eclim)
+(global-eclim-mode)
+(require 'eclimd)
+
+(setq eclimd-executable
+      "/Applications/Eclipse.app/Contents/Eclipse/eclimd")
+(setq eclim-executable
+      "/Applications/Eclipse.app/Contents/Eclipse/eclim")
+
+(use-package company-emacs-eclim
+  :ensure t)
+(company-emacs-eclim-setup)
+(global-company-mode t)
+
+(use-package gradle-mode
+  :ensure t)
+
+(add-hook 'java-mode-hook '(lambda() (gradle-mode 1)))
+
+
+; Might work -- haven't needed to try yet.
+
+; Commands to make grade more useful.
+;(defun build-and-run ()
+;  (interactive)
+;  (gradle-run "build run"))
+
+;(define-key gradle-mode-map (kbd "C-c C-r") 'build-and-run)
+
+; Gradle colors
+;(custom-set-faces
+ ;; ...
+ ;'(company-preview ((t (:background "black" :foreground "red"))))
+ ;'(company-preview-common ((t (:foreground "red"))))
+ ;'(company-preview-search ((t (:inherit company-preview))))
+ ;'(company-scrollbar-bg ((t (:background "brightwhite"))))
+ ;'(company-scrollbar-fg ((t (:background "red"))))
+ ;'(company-template-field ((t (:background "magenta" :foreground "black"))))
+ ;'(company-tooltip ((t (:background "brightwhite" :foreground "black"))))
+ ;'(company-tooltip-annotation ((t (:background "brightwhite" :foreground "black"))))
+ ;'(company-tooltip-annotation-selection ((t (:background "color-253"))))
+ ;'(company-tooltip-common ((t (:background "brightwhite" :foreground "red"))))
+ ;'(company-tooltip-common-selection ((t (:background "color-253" :foreground "red"))))
+ ;'(company-tooltip-mouse ((t (:foreground "black"))))
+ ;'(company-tooltip-search ((t (:background "brightwhite" :foreground "black"))))
+ ;'(company-tooltip-selection ((t (:background "color-253" :foreground
+ ;                                             "black"))))
+ ;; ...
+ ;)
+
+; When going over error with cursor, this command can select some
+;possible corrections
+;(define-key eclim-mode-map (kbd "C-c C-c") 'eclim-problems-correct)
+
+; M-x eclim-java-refactor-rename-symbol-at-point can rename symbols.
+; M-x eclim-java-refactor-move-class can move classes.
+
 (require-package 'emmet-mode)
 
 ;; Auto-start on any markup modes
@@ -1193,12 +1260,6 @@ SCHEDULED: %^t
   --slave --no-save --ess"))
 
 (setq org-confirm-babel-evaluate nil)
-
-(require-package 'company)
-
-(require 'company)
-
-(add-hook 'after-init-hook 'global-company-mode)
 
 (require-package 'diff-hl)
 (add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
