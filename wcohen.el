@@ -390,14 +390,38 @@ with a Windows external keyboard from time to time."
 ;; Replace tabs with spaces
 (setq-default indent-tabs-mode nil)
 
-(require-package 'zenburn-theme)
+(use-package solarized-theme
+   :ensure t)
 
+ ;; make the fringe stand out from the background
+ (setq solarized-distinct-fringe-background t)
 
-  (defun zenburn-init ()
-    (load-theme 'zenburn)
-    )
+;; Don't change the font for some headings and titles
+(setq solarized-use-variable-pitch nil)
 
-  (add-hook 'after-init-hook 'zenburn-init)
+;; make the modeline high contrast
+;(setq solarized-high-contrast-mode-line t)
+
+;; Use less bolding
+(setq solarized-use-less-bold t)
+
+;; Use more italics
+;(setq solarized-use-more-italic t)
+
+;; Use less colors for indicators such as git:gutter, flycheck and similar
+(setq solarized-emphasize-indicators nil)
+
+;; Don't change size of org-mode headlines (but keep other size-changes)
+;(setq solarized-scale-org-headlines nil)
+
+;; Avoid all font-size changes
+(setq solarized-height-minus-1 1)
+(setq solarized-height-plus-1 1)
+(setq solarized-height-plus-2 1)
+(setq solarized-height-plus-3 1)
+(setq solarized-height-plus-4 1)
+
+(load-theme 'solarized-light)
 
 (when (not window-system)
   (define-key key-translation-map [?\C-h] [?\C-']))
@@ -442,7 +466,7 @@ with a Windows external keyboard from time to time."
 ;; Some basic preferences
 ;;----------------------------------------------------------------------------
 (setq-default
- blink-cursor-interval 0.4
+ ;blink-cursor-interval 0.4
  bookmark-default-file (expand-file-name ".bookmarks.el" user-emacs-directory)
  buffers-menu-max-size 30
  case-fold-search t
@@ -794,6 +818,8 @@ With arg N, insert N newlines."
 (guide-key-mode 1)
 (diminish 'guide-key-mode)
 
+(blink-cursor-mode 0)
+
 (require-package 'paredit)
 (autoload 'enable-paredit-mode "paredit")
 
@@ -877,8 +903,8 @@ With arg N, insert N newlines."
 
 (setq wc/font-fixed
       (wc/first-available-font
-       "Inconsolata"
        "Source Code Pro"
+       "Inconsolata"
        "Droid Sans Mono"
        "Ubuntu Mono"
        "Menlo"
