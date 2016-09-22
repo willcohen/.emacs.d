@@ -8,9 +8,10 @@
 
 (require 'package)
 (setq package-enable-at-startup nil)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/")
-             '("gnu" . "https://elpa.gnu.org/packages/"))
+(setq package-archives
+             '(("melpa" . "https://melpa.org/packages/")
+              ("org" . "http://orgmode.org/elpa/")
+              ("gnu" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 
@@ -125,12 +126,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
       (browse-url (concat "file://" file-name)))))
 
 (require 'package)
-
-;;; Set the repository list
-
-(setq package-archives '(("melpa" . "http://melpa.org/packages/")
-                         ("org" . "http://orgmode.org/elpa/")
-                         ("gnu" . "http://elpa.gnu.org/packages/")))
 
 ;;; On-demand installation of packages
 
