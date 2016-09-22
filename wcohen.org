@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-22 08:00:13 wcohen>
+# Time-stamp: <2016-09-22 15:31:31 wcohen>
 
 * Configuration
 ** About this file
@@ -2001,7 +2001,6 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
 *** Window manipulation
 
 #+begin_src emacs-lisp
-  ; (require-package 'golden-ratio)
   (require-package 'winner)
   (require-package 'switch-window)
 
@@ -2011,37 +2010,9 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
   ;;----------------------------------------------------------------------------
   (winner-mode 1)
 
-
-  ;; ;;; Golden Ratio
-
-  ;; (require 'golden-ratio)
-
-  ;; (setq golden-ratio-exclude-modes '("nh-map-mode" "nh-message-mode"
-  ;;                                    "nh-status-mode" "rmail-mode"
-  ;;                                    "rmail-summary-mode"
-  ;;                                    ;; fundamental-mode is added here because the
-  ;;                                    ;; temp buffers used by switch-window is
-  ;;                                    ;; fundamental-mode "fundamental-mode"
-  ;;                                    ))
-
-  ;; (golden-ratio-mode 1)
-  ;; (setq golden-ratio-auto-scale t)
-
-  ;; ;;; Helm Autoresize and Golden Ratio can coexist
-
-  ;; (add-to-list 'golden-ratio-inhibit-functions 'wc/helm-alive-p)
-
-  ;; Make "C-x o" prompt for a target window when there are more than 2
-
   (require 'switch-window)
   (setq switch-window-shortcut-style 'qwerty)
-  (defadvice switch-window
-      (around golden-ratio-resize-window activate)
-    (if (<= (length (window-list)) 3)
-        (call-interactively 'other-window)
-      ad-do-it)
-    (golden-ratio)
-    nil)
+
   (global-set-key (kbd "C-x o") 'switch-window)
 
 

@@ -1427,7 +1427,6 @@ SCHEDULED: %^t
 (require 'discover)
 (global-discover-mode 1)
 
-; (require-package 'golden-ratio)
 (require-package 'winner)
 (require-package 'switch-window)
 
@@ -1437,37 +1436,9 @@ SCHEDULED: %^t
 ;;----------------------------------------------------------------------------
 (winner-mode 1)
 
-
-;; ;;; Golden Ratio
-
-;; (require 'golden-ratio)
-
-;; (setq golden-ratio-exclude-modes '("nh-map-mode" "nh-message-mode"
-;;                                    "nh-status-mode" "rmail-mode"
-;;                                    "rmail-summary-mode"
-;;                                    ;; fundamental-mode is added here because the
-;;                                    ;; temp buffers used by switch-window is
-;;                                    ;; fundamental-mode "fundamental-mode"
-;;                                    ))
-
-;; (golden-ratio-mode 1)
-;; (setq golden-ratio-auto-scale t)
-
-;; ;;; Helm Autoresize and Golden Ratio can coexist
-
-;; (add-to-list 'golden-ratio-inhibit-functions 'wc/helm-alive-p)
-
-;; Make "C-x o" prompt for a target window when there are more than 2
-
 (require 'switch-window)
 (setq switch-window-shortcut-style 'qwerty)
-(defadvice switch-window
-    (around golden-ratio-resize-window activate)
-  (if (<= (length (window-list)) 3)
-      (call-interactively 'other-window)
-    ad-do-it)
-  (golden-ratio)
-  nil)
+
 (global-set-key (kbd "C-x o") 'switch-window)
 
 
