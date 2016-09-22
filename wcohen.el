@@ -995,10 +995,10 @@ With arg N, insert N newlines."
 (add-to-list 'auto-mode-alist '("\\.php?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.js?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+;(add-to-list 'auto-mode-alist '("\\.js?\\'" . web-mode))
+;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 
-(setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+;(setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
 
 (defun syntax-colorize-foreground (color)
   "Colorize foreground based on background luminance."
@@ -1041,7 +1041,40 @@ With arg N, insert N newlines."
 
 (add-hook 'web-mode-hook 'web-mode-hook-settings)
 
-(require-package 'json-mode)
+(use-package json-mode
+  :ensure t)
+
+(use-package js2-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.jsx?\\'" . js2-jsx-mode))
+  (add-to-list 'interpreter-mode-alist '("node" . js2-jsx-mode))
+  )
+
+(defvar preferred-javascript-indent-level 2)
+
+(setq-default js2-basic-offset preferred-javascript-indent-level
+              js2-bounce-indent-p nil)
+
+(use-package js-comint
+  :ensure t)
+
+(use-package nvm
+  :ensure t)
+
+(setq inferior-js-program-command "node")
+(setq inferior-js-program-arguments '("--interactive"))
+
+(js-do-use-nvm)
+
+;; Keybindings to send from js2-mode
+(add-hook 'js2-mode-hook '(lambda ()
+                            (local-set-key "\C-x\C-e" 'js-send-last-sexp)
+                            (local-set-key "\C-\M-x" 'js-send-last-sexp-and-go)
+                            (local-set-key "\C-cb" 'js-send-buffer)
+                            (local-set-key "\C-c\C-b" 'js-send-buffer-and-go)
+                            (local-set-key "\C-cl" 'js-load-file-and-go)
+                            ))
 
 (use-package company
   :ensure t)
@@ -1549,8 +1582,9 @@ Call a second time to restore the original window configuration."
                       '(javascript-jshint)))
 
 
-;; use eslint with web-mode for jsx files
+;; use eslint with web-mode and js2-mode for jsx files
 (flycheck-add-mode 'javascript-eslint 'web-mode)
+(flycheck-add-mode 'javascript-eslint 'js2-mode)
 
 
 ;; customize flycheck temp file prefix
