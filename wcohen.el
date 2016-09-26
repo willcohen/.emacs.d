@@ -371,6 +371,13 @@ with a Windows external keyboard from time to time."
 
 (setq sentence-end-double-space nil)
 
+(global-set-key "\C-x\C-m" 'execute-extended-command)
+(global-set-key "\C-c\C-m" 'execute-extended-command)
+
+(global-set-key "\C-w" 'backward-kill-word)
+(global-set-key "\C-x\C-k" 'kill-region)
+(global-set-key "\C-c\C-k" 'kill-region)
+
 (dolist (command '(yank yank-pop))
   (eval `(defadvice ,command (after indent-region activate)
            (and (not current-prefix-arg)
@@ -1588,6 +1595,9 @@ Call a second time to restore the original window configuration."
 
 (after-load 'flyspell
   (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
+
+(require 'epa-file)
+(epa-file-enable)
 
 (require-package 'htmlize)
 (require-package 'regex-tool)

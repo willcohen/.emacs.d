@@ -1,6 +1,6 @@
 #+TITLE: Will Cohen's Emacs configuration
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-22 15:31:31 wcohen>
+# Time-stamp: <2016-09-24 17:46:46 wcohen>
 
 * Configuration
 ** About this file
@@ -545,6 +545,41 @@ one.
 #+begin_src emacs-lisp
   (setq sentence-end-double-space nil)
 #+end_src
+
+*** Effective Emacs shortcuts
+
+From [[https://sites.google.com/site/steveyegge2/effective-emacs][Steve Yegge]]:
+
+1. Swap Caps Lock and Control (on own keyboard).
+
+2. Invoke =M-x= without the Alt key.
+
+#+begin_src emacs-lisp
+  (global-set-key "\C-x\C-m" 'execute-extended-command)
+  (global-set-key "\C-c\C-m" 'execute-extended-command)
+#+end_src
+
+3. Prefer backward-kill-word over Backspace.
+
+#+begin_src emacs-lisp
+  (global-set-key "\C-w" 'backward-kill-word)
+  (global-set-key "\C-x\C-k" 'kill-region)
+  (global-set-key "\C-c\C-k" 'kill-region)
+#+end_src
+
+4. Use incremental search for Navigation.
+
+5. Use Temp Buffers.
+
+6. Master the buffer and window commands.
+
+7. Lose the UI.
+
+8. Learn the most important help functions.
+
+9. Master Emacs's regular expressions.
+
+10. Master the fine-grained text manipulation commands.
 
 *** Indentation
 
@@ -2198,6 +2233,12 @@ From
     (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
 #+end_src
 
+** Email
+
+#+begin_src emacs-lisp
+  (require 'epa-file)
+  (epa-file-enable)
+#+end_src
 
 ** Final configuration
 
