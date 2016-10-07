@@ -901,6 +901,11 @@ With arg N, insert N newlines."
 (when *configured-windows*
   (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
 
+(use-package sql-indent
+  :ensure t)
+
+'(load-library "sql-indent")
+
 (require-package 'cider)
 
 (require 'tramp)
@@ -1595,9 +1600,6 @@ Call a second time to restore the original window configuration."
 
 (after-load 'flyspell
   (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
-
-(require 'epa-file)
-(epa-file-enable)
 
 (require-package 'htmlize)
 (require-package 'regex-tool)

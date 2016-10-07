@@ -1,6 +1,7 @@
-#+TITLE: Will Cohen's Emacs configuration
+#+TITLE: Emacs configuration
+#+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-24 17:46:46 wcohen>
+# Time-stamp: <2016-09-29 15:45:46 wcohen>
 
 * Configuration
 ** About this file
@@ -1177,6 +1178,15 @@ Set up sql-postgres mode to by default as for ports as well
     (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
 #+end_src
 
+Indentation.
+
+#+begin_src emacs-lisp
+  (use-package sql-indent
+    :ensure t)
+
+  '(load-library "sql-indent")
+#+end_src
+
 *** Clojure
 
 Be sure that Leiningen is installed.
@@ -2231,13 +2241,6 @@ From
 
   (after-load 'flyspell
     (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
-#+end_src
-
-** Email
-
-#+begin_src emacs-lisp
-  (require 'epa-file)
-  (epa-file-enable)
 #+end_src
 
 ** Final configuration
