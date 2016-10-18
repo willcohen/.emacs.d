@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-09-29 15:45:46 wcohen>
+# Time-stamp: <2016-10-18 07:26:17 wcohen>
 
 * Configuration
 ** About this file
@@ -1593,14 +1593,16 @@ An expander for HTML. Settings found [[https://github.com/smihica/emmet-mode][he
 
 Add support for Markdown.
 
-#+begin_src emacs-lisp
-(require-package 'markdown-mode)
+Be sure to install =kramdown=, using =gem install kramdown=.
 
-(autoload 'markdown-mode "markdown-mode"
-   "Major mode for editing Markdown files" t)
-(add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+#+begin_src emacs-lisp
+  (use-package markdown-mode
+    :ensure t
+    :commands (markdown-mode gfm-mode)
+    :mode (("README\\.md\\'" . gfm-mode)
+           ("\\.md\\'" . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
+    :init (setq markdown-command "kramdown"))
 
 #+end_src
 
