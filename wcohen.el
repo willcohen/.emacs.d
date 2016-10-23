@@ -159,11 +159,10 @@ locate PACKAGE."
 ;(setq package-enable-at-startup nil)
 ;(package-initialize)
 
-;(require-package 'fullframe)
-;(fullframe list-packages quit-window)
-
-(require-package 'cl-lib)
-(require 'cl-lib)
+(use-package cl-lib
+  :ensure t
+  :config
+  (require 'cl-lib))
 
 (defun wc/set-tabulated-list-column-width (col-name width)
   "Set any column with name COL-NAME to the given WIDTH."
@@ -180,26 +179,36 @@ locate PACKAGE."
 
 (add-hook 'package-menu-mode-hook 'wc/maybe-widen-package-menu-columns)
 
-(require-package 'use-package)
-(require 'use-package)
+(use-package bind-key
+  :ensure t)
 
-(require-package 'bind-key)
-
-(when *is-mac* (require-package 'exec-path-from-shell))
-
-(after-load 'exec-path-from-shell
-            (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE"))
-              (add-to-list 'exec-path-from-shell-variables var)))
+(when *is-mac*
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
+  "LANG" "LC_CTYPE"))
+      (add-to-list 'exec-path-from-shell-variables var))))
 
 
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
-(require-package 'wgrep)
-(require-package 'project-local-variables)
-(require-package 'diminish)
-(require-package 'scratch)
-(require-package 'mwe-log-commands)
+(use-package wgrep
+   :ensure t)
+
+ (use-package
+project-local-variables
+   :ensure t)
+
+ (use-package diminish
+   :ensure t)
+
+ (use-package scratch
+   :ensure t)
+
+ (use-package mwe-log-commands
+   :ensure t)
 
 ;;----------------------------------------------------------------------------
 ;; Stop C-z from minimizing windows under OS X
@@ -307,8 +316,11 @@ with a Windows external keyboard from time to time."
 
 (global-set-key (kbd "C-c w") 'swap-meta-and-super)
 
-(require-package 'guru-mode)
-(require-package 'deft)
+(use-package guru-mode
+  :ensure t)
+
+(use-package deft
+  :ensure t)
 
 ;;; Turn on time-stamp updating. Timestamp must be in first 8 lines of
 ;;;   file and look like:
@@ -467,7 +479,8 @@ with a Windows external keyboard from time to time."
           (define-key key-translation-map (make-string 1 key) def)))
     (setq translations (cddr translations))))
 
-(require-package 'unfill)
+(use-package unfill
+  :ensure t)
 
 (when (fboundp 'electric-pair-mode)
   (electric-pair-mode))
@@ -523,8 +536,10 @@ with a Windows external keyboard from time to time."
   (add-hook hook #'wc/no-trailing-whitespace))
 
 
-(require-package 'whitespace-cleanup-mode)
-(global-whitespace-cleanup-mode t)
+(use-package whitespace-cleanup-mode
+  :ensure t
+  :config
+  (global-whitespace-cleanup-mode t))
 
 ;; To enable for a mode instead of using the global mode
 ;; (add-hook 'ruby-mode-hook 'whitespace-cleanup-mode)
@@ -544,33 +559,28 @@ with a Windows external keyboard from time to time."
 (global-set-key (kbd "S-<return>") 'wc/newline-at-end-of-line)
 
 
-
-(when (eval-when-compile (string< "24.3.1" emacs-version))
-  ;; https://github.com/purcell/emacs.d/issues/138
-  (after-load 'subword
-    (diminish 'subword-mode)))
-
-
-
 (when (fboundp 'global-prettify-symbols-mode)
   (global-prettify-symbols-mode))
 
 
-(require-package 'undo-tree)
-(global-undo-tree-mode)
-(diminish 'undo-tree-mode)
+(use-package undo-tree
+  :ensure t
+  :config
+  (global-undo-tree-mode)
+  (diminish 'undo-tree-mode))
 
-
-(require-package 'highlight-symbol)
-(dolist (hook '(prog-mode-hook html-mode-hook css-mode-hook))
-  (add-hook hook 'highlight-symbol-mode)
-  (add-hook hook 'highlight-symbol-nav-mode))
-(add-hook 'org-mode-hook 'highlight-symbol-nav-mode)
-(after-load 'highlight-symbol
+(use-package highlight-symbol
+  :ensure t
+  :config
+  (dolist (hook '(prog-mode-hook html-mode-hook css-mode-hook))
+    (add-hook hook 'highlight-symbol-mode)
+    (add-hook hook 'highlight-symbol-nav-mode))
+  (add-hook 'org-mode-hook 'highlight-symbol-nav-mode)
   (diminish 'highlight-symbol-mode)
   (defadvice highlight-symbol-temp-highlight (around wc/maybe-suppress activate)
     "Suppress symbol highlighting while isearching."
-    (unless isearch-mode ad-do-it)))
+    (unless isearch-mode ad-do-it))
+  )
 
 ;;----------------------------------------------------------------------------
 ;; Zap *up* to char is a handy pair for zap-to-char
@@ -579,11 +589,21 @@ with a Windows external keyboard from time to time."
 (global-set-key (kbd "M-Z") 'zap-up-to-char)
 
 
+(use-package page-break-lines
+  :ensure t
+  :config
+  (global-page-break-lines-mode)
+  (diminish 'page-break-lines-mode)
+  )
 
-(require-package 'browse-kill-ring)
-(setq browse-kill-ring-separator "\f")
-(after-load 'page-break-lines
-  (push 'browse-kill-ring-mode page-break-lines-modes))
+
+(use-package browse-kill-ring
+  :ensure t
+  :bind ("M-y" . browse-kill-ring)
+  :config
+  (setq browse-kill-ring-separator "\f")
+  (push 'browse-kill-ring-mode page-break-lines-modes)
+  )
 
 
 ;;----------------------------------------------------------------------------
@@ -598,12 +618,10 @@ with a Windows external keyboard from time to time."
 ;;----------------------------------------------------------------------------
 (show-paren-mode 1)
 
-;;----------------------------------------------------------------------------
-;; Expand region
-;;----------------------------------------------------------------------------
-(require-package 'expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
-
+(use-package expand-region
+  :ensure t
+  :bind ("C-=" . er/expand-region)
+)
 
 ;;----------------------------------------------------------------------------
 ;; Don't disable case-change functions
@@ -631,23 +649,23 @@ with a Windows external keyboard from time to time."
 (global-set-key (kbd "C-.") 'set-mark-command)
 (global-set-key (kbd "C-x C-.") 'pop-global-mark)
 
-(require-package 'ace-jump-mode)
-(global-set-key (kbd "C-;") 'ace-jump-mode)
-(global-set-key (kbd "C-:") 'ace-jump-word-mode)
+(use-package ace-jump-mode
+  :ensure t
+  :bind (("C-;" . ace-jump-mode)
+         ("C-:" . ace-jump-word-mode)))
 
-
-(require-package 'multiple-cursors)
-;; multiple-cursors
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-+") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-;; From active region to multiple cursors:
-(global-set-key (kbd "C-c c r") 'set-rectangular-region-anchor)
-(global-set-key (kbd "C-c c c") 'mc/edit-lines)
-(global-set-key (kbd "C-c c e") 'mc/edit-ends-of-lines)
-(global-set-key (kbd "C-c c a") 'mc/edit-beginnings-of-lines)
-
+(use-package multiple-cursors
+  :ensure t
+  :bind (("C-<" . mc/mark-previous-like-this)
+         ("C->" . mc/mark-next-like-this)
+         ("C-+" . mc/mark-next-like-this)
+         ("C-c C-<" . mc/mark-all-like-this)
+         ;; From active region to multiple cursors
+         ("C-c c r" . set-rectangular-region-anchor)
+         ("C-c c c" . mc/edit-lines)
+         ("C-c c e" . mc/edit-ends-of-lines)
+         ("C-c c a" . mc/edit-beginnings-of-lines)
+         ))
 
 ;; Train myself to use M-f and M-b instead
 (global-unset-key [M-left])
@@ -664,65 +682,25 @@ with a Windows external keyboard from time to time."
 
 (global-set-key (kbd "C-M-<backspace>") 'kill-back-to-indentation)
 
+(use-package fill-column-indicator
+  :ensure t
+  :config
+  (define-globalized-minor-mode global-fci-mode fci-mode
+    (lambda ()
+      (if buffer-file-name
+          (fci-mode 1))))
+  (global-fci-mode 1)
+  )
 
-;;----------------------------------------------------------------------------
-;; Page break lines
-;;----------------------------------------------------------------------------
-(require-package 'page-break-lines)
-(global-page-break-lines-mode)
-(diminish 'page-break-lines-mode)
-
-;;----------------------------------------------------------------------------
-;; Fill column indicator
-;;----------------------------------------------------------------------------
-(when (eval-when-compile (> emacs-major-version 23))
-  (require-package 'fill-column-indicator)
-  (defun wc/prog-mode-fci-settings ()
-    (turn-on-fci-mode)
-    (when show-trailing-whitespace
-      (set (make-local-variable 'whitespace-style) '(face trailing))
-      (whitespace-mode 1)))
-
-  ;;(add-hook 'prog-mode-hook 'wc/prog-mode-fci-settings)
-
-  (defun wc/fci-enabled-p ()
-    (and (boundp 'fci-mode) fci-mode))
-
-  (defvar wc/fci-mode-suppressed nil)
-  (defadvice popup-create (before suppress-fci-mode activate)
-    "Suspend fci-mode while popups are visible"
-    (let ((fci-enabled (wc/fci-enabled-p)))
-      (when fci-enabled
-        (set (make-local-variable 'wc/fci-mode-suppressed) fci-enabled)
-        (turn-off-fci-mode))))
-  (defadvice popup-delete (after restore-fci-mode activate)
-    "Restore fci-mode when all popups have closed"
-    (when (and wc/fci-mode-suppressed
-               (null popup-instances))
-      (setq wc/fci-mode-suppressed nil)
-      (turn-on-fci-mode)))
-
-  ;; Regenerate fci-mode line images after switching themes
-  (defadvice enable-theme (after recompute-fci-face activate)
-    (dolist (buffer (buffer-list))
-      (with-current-buffer buffer
-        (when (wc/fci-enabled-p)
-          (turn-on-fci-mode))))))
-
-
-;;----------------------------------------------------------------------------
-;; Shift lines up and down with M-up and M-down. When paredit is enabled,
-;; it will use those keybindings. For this reason, you might prefer to
-;; use M-S-up and M-S-down, which will work even in lisp modes.
-;;----------------------------------------------------------------------------
-(require-package 'move-dup)
-(global-set-key [M-up] 'md/move-lines-up)
-(global-set-key [M-down] 'md/move-lines-down)
-(global-set-key [M-S-up] 'md/move-lines-up)
-(global-set-key [M-S-down] 'md/move-lines-down)
-
-(global-set-key (kbd "C-c p") 'md/duplicate-down)
-(global-set-key (kbd "C-c P") 'md/duplicate-up)
+(use-package move-dup
+  :ensure t
+  :bind (
+         ([M-up] . md/move-lines-up)
+         ([M-down] . md/move-lines-down)
+         ([M-S-up] . md-move-lines-up)
+         ([M-S-down] . md/move-lines-down)
+         ("C-c p" . md/duplicate-down)
+         ("C-c P" . md/duplicate-up)))
 
 ;;----------------------------------------------------------------------------
 ;; Fix backward-up-list to understand quotes, see http://bit.ly/h7mdIL
@@ -738,14 +716,13 @@ with a Windows external keyboard from time to time."
 
 (global-set-key [remap backward-up-list] 'backward-up-sexp) ; C-M-u, C-M-up
 
-
-;;----------------------------------------------------------------------------
-;; Cut/copy the current line if no region is active
-;;----------------------------------------------------------------------------
-(require-package 'whole-line-or-region)
-(whole-line-or-region-mode t)
-(diminish 'whole-line-or-region-mode)
-(make-variable-buffer-local 'whole-line-or-region-mode)
+(use-package whole-line-or-region
+  :ensure t
+  :config
+  (whole-line-or-region-mode t)
+  (diminish 'whole-line-or-region-mode)
+  (make-variable-buffer-local 'whole-line-or-region-mode)
+  )
 
 (defun suspend-mode-during-cua-rect-selection (mode-name)
   "Add an advice to suspend `MODE-NAME' while selecting a CUA rectangle."
@@ -764,9 +741,6 @@ with a Windows external keyboard from time to time."
              (,mode-name 1)))))))
 
 (suspend-mode-during-cua-rect-selection 'whole-line-or-region-mode)
-
-
-
 
 (defun wc/open-line-with-reindent (n)
   "A version of `open-line' which reindents the start and end positions.
@@ -821,28 +795,34 @@ With arg N, insert N newlines."
 
 
 
-(require-package 'highlight-escape-sequences)
-(hes-mode)
+(use-package highlight-escape-sequences
+  :ensure t
+  :config
+  (hes-mode))
 
 
-(require-package 'guide-key)
-(setq guide-key/guide-key-sequence '("C-x" "C-c" "C-x 4" "C-x 5" "C-c ;" "C-c ; f" "C-c ' f" "C-x n" "C-x C-r" "C-x r"))
-(guide-key-mode 1)
-(diminish 'guide-key-mode)
+
+(use-package guide-key
+  :ensure t
+  :config
+  (setq guide-key/guide-key-sequence '("C-x" "C-c" "C-x 4" "C-x 5" "C-c ;" "C-c ; f" "C-c ' f" "C-x n" "C-x C-r" "C-x r"))
+  (guide-key-mode 1)
+  (diminish 'guide-key-mode)
+  )
 
 (blink-cursor-mode 0)
 
-(require-package 'paredit)
-(autoload 'enable-paredit-mode "paredit")
+(use-package paredit
+  :ensure t
+  :config
+  (autoload 'enable-paredit-mode "paredit")
 
-(defun maybe-map-paredit-newline ()
-  (unless (or (memq major-mode '(inferior-emacs-lisp-mode cider-repl-mode))
-              (minibufferp))
-    (local-set-key (kbd "RET") 'paredit-newline)))
+  (defun maybe-map-paredit-newline ()
+    (unless (or (memq major-mode '(inferior-emacs-lisp-mode cider-repl-mode))
+                (minibufferp))
+      (local-set-key (kbd "RET") 'paredit-newline)))
 
-(add-hook 'paredit-mode-hook 'maybe-map-paredit-newline)
-
-(after-load 'paredit
+  (add-hook 'paredit-mode-hook 'maybe-map-paredit-newline)
   (diminish 'paredit-mode " Par")
   (dolist (binding (list (kbd "C-<left>") (kbd "C-<right>")
                          (kbd "C-M-<left>") (kbd "C-M-<right>")))
@@ -854,40 +834,39 @@ With arg N, insert N newlines."
   (define-key paredit-mode-map [remap backward-kill-sentence] nil)
 
   ;; Allow my global binding of M-? to work when paredit is active
-  (define-key paredit-mode-map (kbd "M-?") nil))
+  (define-key paredit-mode-map (kbd "M-?") nil)
 
+  (suspend-mode-during-cua-rect-selection 'paredit-mode)
 
-;; Compatibility with other modes
+  ;; Use paredit in the minibuffer
+  ;; TODO: break out into separate package
+  ;; http://emacsredux.com/blog/2013/04/18/evaluate-emacs-lisp-in-the-minibuffer/
+  (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
 
-(suspend-mode-during-cua-rect-selection 'paredit-mode)
+  (defvar paredit-minibuffer-commands '(eval-expression
+                                        pp-eval-expression
+                                        eval-expression-with-eldoc
+                                        ibuffer-do-eval
+                                        ibuffer-do-view-and-eval)
+    "Interactive commands for which paredit should be enabled in the minibuffer.")
 
+  (defun conditionally-enable-paredit-mode ()
+    "Enable paredit during lisp-related minibuffer commands."
+    (if (memq this-command paredit-minibuffer-commands)
+        (enable-paredit-mode)))
+  )
 
-;; Use paredit in the minibuffer
-;; TODO: break out into separate package
-;; http://emacsredux.com/blog/2013/04/18/evaluate-emacs-lisp-in-the-minibuffer/
-(add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
+(use-package paredit-everywhere
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook 'paredit-everywhere-mode)
+  (add-hook 'css-mode-hook 'paredit-everywhere-mode)
+  )
 
-(defvar paredit-minibuffer-commands '(eval-expression
-                                      pp-eval-expression
-                                      eval-expression-with-eldoc
-                                      ibuffer-do-eval
-                                      ibuffer-do-view-and-eval)
-  "Interactive commands for which paredit should be enabled in the minibuffer.")
-
-(defun conditionally-enable-paredit-mode ()
-  "Enable paredit during lisp-related minibuffer commands."
-  (if (memq this-command paredit-minibuffer-commands)
-      (enable-paredit-mode)))
-
-;; ----------------------------------------------------------------------------
-;; Enable some handy paredit functions in all prog modes
-;; ----------------------------------------------------------------------------
-
-(require-package 'paredit-everywhere)
-(add-hook 'prog-mode-hook 'paredit-everywhere-mode)
-(add-hook 'css-mode-hook 'paredit-everywhere-mode)
-
-(when (not *is-windows*) (require-package 'ess))
+(when (not *is-windows*)
+  (use-package ess
+    :ensure t)
+  )
 
 (setq sql-postgres-login-params
       '((user :default "postgres")
@@ -895,18 +874,22 @@ With arg N, insert N newlines."
         (server :default "localhost")
         (port :default 5432)))
 
-;;; On Windows, use the Cygwin psql client instead (and be sure it is
-;;; installed).
+  ;;; On Windows, use the Cygwin psql client instead (and be sure it is
+  ;;; installed).
 
 (when *configured-windows*
   (setq sql-postgres-program "C:/cygwin64/bin/psql.exe"))
+
+(when *configured-mac*
+  (setq sql-postgres-program "/Applications/Postgres.app/Contents/Versions/latest/bin/psql"))
 
 (use-package sql-indent
   :ensure t)
 
 '(load-library "sql-indent")
 
-(require-package 'cider)
+(use-package cider
+  :ensure t)
 
 (require 'tramp)
 (when *configured-windows*
@@ -977,19 +960,26 @@ With arg N, insert N newlines."
 
 (counsel-projectile-on)
 
-(require-package 'elpy)
+(use-package elpy
+  :ensure t
+  :config
+  (elpy-enable))
 
-(elpy-enable)
+(use-package geiser
+  :ensure t
+  :config
+  (when *configured-mac*
+    (setq geiser-racket-binary
+          "/Applications/Racket v6.1.1/bin/racket"))
+  )
 
-(require-package 'geiser)
-(require-package 'sicp)
+(use-package sicp
+  :ensure t)
 
-(when *configured-mac*
-  (setq geiser-racket-binary
-        "/Applications/Racket v6.1.1/bin/racket"))
-
-(require-package 'web-mode)
-(require 'web-mode)
+(use-package web-mode
+  :ensure t
+  :config
+  (require 'web-mode))
 
 (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
@@ -1150,16 +1140,19 @@ With arg N, insert N newlines."
 ; M-x eclim-java-refactor-rename-symbol-at-point can rename symbols.
 ; M-x eclim-java-refactor-move-class can move classes.
 
-(require-package 'emmet-mode)
+(use-package emmet-mode
+  :ensure t
+  :config
 
-;; Auto-start on any markup modes
-(add-hook 'sgml-mode-hook 'emmet-mode)
-(add-hook 'web-mode-hook 'emmet-mode)
+  ;; Auto-start on any markup modes
+  (add-hook 'sgml-mode-hook 'emmet-mode)
+  (add-hook 'web-mode-hook 'emmet-mode)
 
-;; Enable emmet's css abbrevation
-(add-hook 'css-mode-hook  'emmet-mode)
+  ;; Enable emmet's css abbrevation
+  (add-hook 'css-mode-hook  'emmet-mode)
 
-(setq emmet-move-cursor-between-quotes t) ;; default nil
+  (setq emmet-move-cursor-between-quotes t) ;; default nil
+  )
 
 (use-package markdown-mode
   :ensure t
@@ -1169,9 +1162,11 @@ With arg N, insert N newlines."
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "kramdown"))
 
-(require-package 'yaml-mode)
-
-(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
+(use-package yaml-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
+  )
 
 (bind-key "C-x p" 'pop-to-mark-command)
 (setq set-mark-command-repeat-pop t)
@@ -1337,9 +1332,12 @@ SCHEDULED: %^t
 
 (setq org-confirm-babel-evaluate nil)
 
-(require-package 'diff-hl)
-(add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
-(add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode)
+(use-package diff-hl
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
+  (add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode)
+  )
 
 ;; TODO: link commits from vc-log to magit-show-commit
 ;; TODO: smerge-mode
