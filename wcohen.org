@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-10-23 13:58:14 wcohen>
+# Time-stamp: <2016-10-25 18:10:52 wcohen>
 
 * Configuration
 ** About this file
@@ -595,7 +595,7 @@ From [[https://sites.google.com/site/steveyegge2/effective-emacs][Steve Yegge]]:
 *** Indentation
 
 Indent code automatically when yanking. Do it for ELisp, Lisp, Scheme,
-Python, R, and JS.
+Python, R.
 
 #+begin_src emacs-lisp
   (dolist (command '(yank yank-pop))
@@ -603,7 +603,7 @@ Python, R, and JS.
              (and (not current-prefix-arg)
                   (member major-mode
                           '(emacs-lisp-mode lisp-mode scheme-mode
-                                            python-mode r-mode js3-mode
+                                            python-mode r-mode
                                             ))
                   (let ((mark-even-if-inactive transient-mark-mode))
                     (indent-region (region-beginning) (region-end) nil))))))
@@ -969,6 +969,16 @@ Fill column indicator
             (fci-mode 1))))
     (global-fci-mode 1)
     )
+#+end_src
+
+Fill column doesn't work with web-mode right now.
+
+See [[https://github.com/alpaker/Fill-Column-Indicator/issues/46][github]].
+
+#+begin_src emacs-lisp
+  (add-hook 'after-change-major-mode-hook
+            (lambda () (if (string= major-mode "web-mode")
+                           (turn-off-fci-mode) (turn-on-fci-mode))))
 #+end_src
 
 Shift lines up and down with M-up and M-down. When paredit is enabled,

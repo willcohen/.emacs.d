@@ -395,7 +395,7 @@ with a Windows external keyboard from time to time."
            (and (not current-prefix-arg)
                 (member major-mode
                         '(emacs-lisp-mode lisp-mode scheme-mode
-                                          python-mode r-mode js3-mode
+                                          python-mode r-mode
                                           ))
                 (let ((mark-even-if-inactive transient-mark-mode))
                   (indent-region (region-beginning) (region-end) nil))))))
@@ -691,6 +691,10 @@ with a Windows external keyboard from time to time."
           (fci-mode 1))))
   (global-fci-mode 1)
   )
+
+(add-hook 'after-change-major-mode-hook
+          (lambda () (if (string= major-mode "web-mode")
+                         (turn-off-fci-mode) (turn-on-fci-mode))))
 
 (use-package move-dup
   :ensure t
