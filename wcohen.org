@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-10-25 18:10:52 wcohen>
+# Time-stamp: <2016-10-26 23:13:38 wcohen>
 
 * Configuration
 ** About this file
@@ -1364,6 +1364,45 @@ elpy. Also, install using =conda install= instead of =pip=.
     (elpy-enable))
 #+end_src
 
+**** Jupyter
+
+For a new virtualenv:
+
+#+begin_src bash :tangle no
+
+python3 -m venv ~/.virtualenvs/venvnamehere
+source ~/.virtualenvs/venvnamehere/bin/activate
+pip3 install --upgrade pip
+pip3 install jupyter
+pip3 install jedi flake8
+
+#+end_src
+
+
+Integrate with [[https://github.com/gregsexton/ob-ipython][ob-ipython]], which enables Jupyter for org-babel.
+
+#+begin_src emacs-lisp
+    (use-package ob-ipython
+      :ensure t
+      :config
+      (require 'ob-ipython)
+      )
+#+end_src
+
+To tangle: use =py= with yasnippet.
+
+Other notes from github:
+
+Be sure to use =%matplotlib inline=, otherwise graphics won’t work.
+
+Open a REPL using =C-c C-v C-z= so that you get completion in Python buffers.
+
+Fix python popup issue from [[https://github.com/gregsexton/ob-ipython/issues/28][github]].
+
+#+begin_src emacs-lisp
+  (setq python-shell-completion-native-enable nil)
+#+end_src
+
 *** Lisp
 
 Scheme and Racket
@@ -1522,15 +1561,56 @@ which node to use. To change the version of node, run
                               ))
 #+end_src
 
-*** Company mode
+*** Yasnippet and company
+
+Add yasnippet.
+
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config
+    (add-to-list 'load-path
+                 "~/.emacs.d/plugins/yasnippet")
+    (require 'yasnippet)
+    (yas-global-mode 1))
+#+end_src
+
+Add company.
 
 #+begin_src emacs-lisp
   (use-package company
-    :ensure t)
+    :ensure t
+    :config
 
-  (require 'company)
+    ;; company mode
+    (require 'company)
+    (add-hook 'after-init-hook 'global-company-mode)
 
-  (add-hook 'after-init-hook 'global-company-mode)
+    ;; company delay until suggestions are shown
+    (setq company-idle-delay 0.5)
+
+    ;; weight by frequency
+    (setq company-transformers '(company-sort-by-occurrence))
+
+    ;; Add yasnippet support for all company backends
+    ;; https://github.com/syl20bnr/spacemacs/pull/179
+    (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+
+    (defun company-mode/backend-with-yas (backend)
+      (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
+          backend
+        (append (if (consp backend) backend (list backend))
+                '(:with company-yasnippet))))
+
+    (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+    )
+
+
+#+end_src
+
+From [[https://www.reddit.com/r/emacs/comments/3r9fic/best_practicestip_for_companymode_andor_yasnippet/][reddit]], configure the two to work together.
+
+#+begin_src emacs-lisp
 
 #+end_src
 
@@ -1923,6 +2003,8 @@ Define <r to insert R block.
           ("r" "#+begin_src R\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
           ("rs" "#+begin_src R :session\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
           ))
+
+
 #+end_src
 
 *** Org-babel
@@ -1933,6 +2015,7 @@ Enable org-babel for Emacs lisp and R.
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
+     (ipython . t)
      (R . t)))
 #+end_src
 
@@ -1950,7 +2033,13 @@ Disable confirmation of running code blocks.
   (setq org-confirm-babel-evaluate nil)
 #+end_src
 
-#+RESULTS:
+Display/update images in the buffer after I evaluate (from [[https://github.com/gregsexton/ob-ipython][github for
+ob-ipython]]).
+
+#+begin_src emacs-lisp
+  (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
+#+end_src
+
 
 ** Interactivity
 

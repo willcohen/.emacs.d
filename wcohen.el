@@ -969,6 +969,14 @@ With arg N, insert N newlines."
   :config
   (elpy-enable))
 
+(use-package ob-ipython
+  :ensure t
+  :config
+  (require 'ob-ipython)
+  )
+
+(setq python-shell-completion-native-enable nil)
+
 (use-package geiser
   :ensure t
   :config
@@ -1077,12 +1085,42 @@ With arg N, insert N newlines."
                             (local-set-key "\C-cl" 'js-load-file-and-go)
                             ))
 
+(use-package yasnippet
+  :ensure t
+  :config
+  (add-to-list 'load-path
+               "~/.emacs.d/plugins/yasnippet")
+  (require 'yasnippet)
+  (yas-global-mode 1))
+
 (use-package company
-  :ensure t)
+  :ensure t
+  :config
 
-(require 'company)
+  ;; company mode
+  (require 'company)
+  (add-hook 'after-init-hook 'global-company-mode)
 
-(add-hook 'after-init-hook 'global-company-mode)
+  ;; company delay until suggestions are shown
+  (setq company-idle-delay 0.5)
+
+  ;; weight by frequency
+  (setq company-transformers '(company-sort-by-occurrence))
+
+  ;; Add yasnippet support for all company backends
+  ;; https://github.com/syl20bnr/spacemacs/pull/179
+  (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+
+  (defun company-mode/backend-with-yas (backend)
+    (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
+        backend
+      (append (if (consp backend) backend (list backend))
+              '(:with company-yasnippet))))
+
+  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+  )
+
+
 
 (use-package eclim
   :ensure t)
@@ -1328,6 +1366,7 @@ SCHEDULED: %^t
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
+   (ipython . t)
    (R . t)))
 
 (when *configured-windows*
@@ -1335,6 +1374,8 @@ SCHEDULED: %^t
   --slave --no-save --ess"))
 
 (setq org-confirm-babel-evaluate nil)
+
+(add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
 (use-package diff-hl
   :ensure t
