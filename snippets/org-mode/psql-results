@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: supernormal postgresql block results
+# key: psql-results
+# --
+#+BEGIN_SRC sql :engine postgresql :exports results :cmdline -p 5433 -h localhost -U postgres -d supernormal
+$0
+#+END_SRC

@@ -1,4 +1,3 @@
-
 (load "~/.emacs.d/personal.el" t)
 
 (defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
@@ -682,20 +681,6 @@ with a Windows external keyboard from time to time."
 
 (global-set-key (kbd "C-M-<backspace>") 'kill-back-to-indentation)
 
-(use-package fill-column-indicator
-  :ensure t
-  :config
-  (define-globalized-minor-mode global-fci-mode fci-mode
-    (lambda ()
-      (if buffer-file-name
-          (fci-mode 1))))
-  (global-fci-mode 1)
-  )
-
-(add-hook 'after-change-major-mode-hook
-          (lambda () (if (string= major-mode "web-mode")
-                         (turn-off-fci-mode) (turn-on-fci-mode))))
-
 (use-package move-dup
   :ensure t
   :bind (
@@ -1232,6 +1217,9 @@ With arg N, insert N newlines."
 
 (bind-key "C-c g" 'jump-to-register)
 
+(use-package org
+  :ensure org-plus-contrib)
+
 (setq org-modules '(org-bbdb
                     org-gnus
                     org-drill
@@ -1367,7 +1355,10 @@ SCHEDULED: %^t
  'org-babel-load-languages
  '((emacs-lisp . t)
    (ipython . t)
-   (R . t)))
+   (R . t)
+   (sql . t)
+   (shell . t)
+   ))
 
 (when *configured-windows*
   (setq org-babel-R-command "C:/Progra~1/R/R-3.2.2/bin/R.exe
