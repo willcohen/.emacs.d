@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-12-08 15:52:44 wcohen>
+# Time-stamp: <2016-12-08 15:54:22 wcohen>
 
 * Configuration
 ** About this file
