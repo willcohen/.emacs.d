@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-12-08 15:17:32 wcohen>
+# Time-stamp: <2016-12-08 15:24:09 wcohen>
 
 * Configuration
 ** About this file
@@ -1759,8 +1759,6 @@ shortcuts for refiling.
            (call-interactively 'org-refile))))))
 
 (wc/defshortcut ?i "~/.emacs.d/wcohen.org")
-(wc/defshortcut ?o "~/org/organizer.org")
-(wc/defshortcut ?w "~/org/work.org")
 #+END_SRC
 
 Add shortcut for =jump-to-register=.
@@ -1786,16 +1784,6 @@ org-plus-contrib is indeed used and all is well.""
     :defer 7)
 #+end_src
 
-
-*** My files
-
-These are the org files I use.
-
-| organizer.org | Main Org file, for M-x org-capture, tasks, weekly reviews |
-| work.org      | Work-related notes and TODOs                              |
-|               |                                                           |
-
-*** Modules
 
 Modules that are being used for org.
 
@@ -1830,7 +1818,6 @@ From http://stackoverflow.com/questions/15011703/is-there-an-emacs-org-mode-comm
         org-goto-max-level 10)
   (require 'imenu)
   (setq org-startup-folded nil)
-  (bind-key "C-c j" 'org-clock-goto) ;; jump to current task from anywhere
   (bind-key "C-c C-w" 'org-refile)
   (setq org-cycle-include-plain-lists 'integrate)
 #+end_src
@@ -1839,38 +1826,39 @@ From http://stackoverflow.com/questions/15011703/is-there-an-emacs-org-mode-comm
   The following code makes it easier for me to link trees with entries
 
   #+begin_src emacs-lisp
-  (defun wc/org-follow-entry-link ()
-    "Follow the defined link for this entry."
-    (interactive)
-    (if (org-entry-get (point) "LINK")
-        (org-open-link-from-string (org-entry-get (point) "LINK"))
-      (org-open-at-point)))
+    (defun wc/org-follow-entry-link ()
+      "Follow the defined link for this entry."
+      (interactive)
+      (if (org-entry-get (point) "LINK")
+          (org-open-link-from-string (org-entry-get (point) "LINK"))
+        (org-open-at-point)))
 
-  (bind-key "C-c o" 'wc/org-follow-entry-link org-mode-map)
+    (bind-key "C-c o" 'wc/org-follow-entry-link org-mode-map)
 
-  (defun wc/org-link-projects (location)
-    "Add link properties between the current subtree and the one specified by LOCATION."
-    (interactive
-     (list (let ((org-refile-use-cache nil))
-       (org-refile-get-location "Location"))))
-    (let ((link1 (org-store-link nil)) link2)
-      (save-window-excursion
-        (org-refile 4 nil location)
-        (setq link2 (org-store-link nil))
-        (org-set-property "LINK" link1))
-      (org-set-property "LINK" link2)))
+    (defun wc/org-link-projects (location)
+      "Add link properties between the current subtree and the one specified by LOCATION."
+      (interactive
+       (list (let ((org-refile-use-cache nil))
+         (org-refile-get-location "Location"))))
+      (let ((link1 (org-store-link nil)) link2)
+        (save-window-excursion
+          (org-refile 4 nil location)
+          (setq link2 (org-store-link nil))
+          (org-set-property "LINK" link1))
+        (org-set-property "LINK" link2)))
   #+end_src
 
 **** Viewing, navigating, and editing the Org tree
 
-      I often cut and paste subtrees. This makes it easier to cut
-      something and paste it elsewhere in the hierarchy.
-      #+begin_src emacs-lisp
-        (eval-after-load 'org
-          '(progn
-             (bind-key "C-c k" 'org-cut-subtree org-mode-map)
-             (setq org-yank-adjusted-subtrees t)))
-  #+end_src
+To cut and paste subtrees. This makes it easier to cut something and
+paste it elsewhere in the hierarchy.
+
+#+begin_src emacs-lisp
+  (eval-after-load 'org
+    '(progn
+       (bind-key "C-c k" 'org-cut-subtree org-mode-map)
+       (setq org-yank-adjusted-subtrees t)))
+#+end_src
 
 *** Keyboard shortcuts
 
@@ -1921,51 +1909,6 @@ To add links from outside.
   (global-set-key (kbd "<f6>") 'wc/yank-more)
 #+end_src
 
-**** Date trees
-
-Inserts a same-level heading for the next day.
-
-#+begin_src emacs-lisp
-(defun wc/org-insert-heading-for-next-day ()
-  "Insert a same-level heading for the following day."
-  (interactive)
-  (let ((new-date
-         (seconds-to-time
-          (+ 86400.0
-             (float-time
-              (org-read-date nil 'to-time (elt (org-heading-components) 4)))))))
-    (org-insert-heading-after-current)
-    (insert (format-time-string "%Y-%m-%d\n\n" new-date))))
-#+end_src
-
-**** Templates
-
-Use =org-capture= templates to jot down tasks, notes, and other pieces
-of info.
-
-#+begin_src emacs-lisp
-  (defvar wc/org-basic-task-template "* TODO %^{Task}
-  SCHEDULED: %^t
-  :PROPERTIES:
-  :Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
-  :END:
-  %?
-  " "Basic task data")
-  (setq org-capture-templates
-        `(("t" "Tasks" entry
-           (file+headline "~/org/organizer.org" "Tasks")
-           ,wc/org-basic-task-template)
-          ("T" "Quick task" entry
-           (file+headline "~/org/organizer.org" "Tasks")
-           "* TODO %^{Task}"
-           :immediate-finish t)
-          ("b" "Business task" entry
-           (file+headline "~/org/work.org" "Tasks")
-           ,wc/org-basic-task-template)
-           ))
-  (bind-key "C-M-r" 'org-capture)
-#+end_src
-
 *** Templates
 
 **** Structure templates
@@ -1993,7 +1936,6 @@ Define <r to insert R block.
           ("r" "#+begin_src R\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
           ("rs" "#+begin_src R :session\n?\n#+end_src" "<src lang=\"R\">\n?\n</src>")
           ))
-
 
 #+end_src
 

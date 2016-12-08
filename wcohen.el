@@ -1212,8 +1212,6 @@ With arg N, insert N newlines."
            (call-interactively 'org-refile))))))
 
 (wc/defshortcut ?i "~/.emacs.d/wcohen.org")
-(wc/defshortcut ?o "~/org/organizer.org")
-(wc/defshortcut ?w "~/org/work.org")
 
 (bind-key "C-c g" 'jump-to-register)
 
@@ -1246,7 +1244,6 @@ With arg N, insert N newlines."
       org-goto-max-level 10)
 (require 'imenu)
 (setq org-startup-folded nil)
-(bind-key "C-c j" 'org-clock-goto) ;; jump to current task from anywhere
 (bind-key "C-c C-w" 'org-refile)
 (setq org-cycle-include-plain-lists 'integrate)
 
@@ -1300,38 +1297,6 @@ With arg N, insert N newlines."
   (yank)
   (insert "][more]]"))
 (global-set-key (kbd "<f6>") 'wc/yank-more)
-
-(defun wc/org-insert-heading-for-next-day ()
-  "Insert a same-level heading for the following day."
-  (interactive)
-  (let ((new-date
-         (seconds-to-time
-          (+ 86400.0
-             (float-time
-              (org-read-date nil 'to-time (elt (org-heading-components) 4)))))))
-    (org-insert-heading-after-current)
-    (insert (format-time-string "%Y-%m-%d\n\n" new-date))))
-
-(defvar wc/org-basic-task-template "* TODO %^{Task}
-SCHEDULED: %^t
-:PROPERTIES:
-:Effort: %^{effort|1:00|0:05|0:15|0:30|2:00|4:00}
-:END:
-%?
-" "Basic task data")
-(setq org-capture-templates
-      `(("t" "Tasks" entry
-         (file+headline "~/org/organizer.org" "Tasks")
-         ,wc/org-basic-task-template)
-        ("T" "Quick task" entry
-         (file+headline "~/org/organizer.org" "Tasks")
-         "* TODO %^{Task}"
-         :immediate-finish t)
-        ("b" "Business task" entry
-         (file+headline "~/org/work.org" "Tasks")
-         ,wc/org-basic-task-template)
-         ))
-(bind-key "C-M-r" 'org-capture)
 
 (setq org-structure-template-alist
       '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
