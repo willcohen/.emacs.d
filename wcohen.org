@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-12-08 15:54:22 wcohen>
+# Time-stamp: <2016-12-13 15:38:41 wcohen>
 
 * Configuration
 ** About this file
@@ -1990,6 +1990,16 @@ ob-ipython]]).
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 #+end_src
 
+** Harvest
+
+For time tracking.
+
+#+begin_src emacs-lisp
+  (use-package harvest
+    :demand t
+    :ensure t
+    )
+#+end_src
 
 ** Interactivity
 

@@ -1345,6 +1345,11 @@ With arg N, insert N newlines."
 
 (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
+(use-package harvest
+  :demand t
+  :ensure t
+  )
+
 (use-package diff-hl
   :ensure t
   :config
