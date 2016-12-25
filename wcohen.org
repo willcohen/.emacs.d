@@ -1214,6 +1214,13 @@ Be sure that Leiningen is installed.
     :ensure t)
 #+end_src
 
+*** Which-key
+
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure t)
+#+end_src
+
 *** TRAMP for remote editing
 
 On Windows, use PuTTY/plink to open files, using the following
