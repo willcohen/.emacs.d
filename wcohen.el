@@ -186,7 +186,9 @@ locate PACKAGE."
     :ensure t
     :config
     (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
-  "LANG" "LC_CTYPE"))
+  "LANG" "LC_CTYPE" "SUPERNORMAL_DBHOST" "SUPERNORMAL_DBPORT"
+  "SUPERNORMAL_DBNAME" "SUPERNORMAL_USERNAME"
+  "SUPERNORMAL_POSTGRES_USER" "SUPERNORMAL_POSTGRES_PASS"))
       (add-to-list 'exec-path-from-shell-variables var))))
 
 
@@ -880,6 +882,9 @@ With arg N, insert N newlines."
 (use-package cider
   :ensure t)
 
+(use-package which-key
+  :ensure t)
+
 (require 'tramp)
 (when *configured-windows*
   (setq tramp-default-method "plink")
@@ -1090,31 +1095,37 @@ With arg N, insert N newlines."
   (yas-global-mode 1))
 
 (use-package company
+    :ensure t
+    :config
+
+    ;; company mode
+    (require 'company)
+    (add-hook 'after-init-hook 'global-company-mode)
+
+    ;; company delay until suggestions are shown
+    (setq company-idle-delay 0.5)
+
+    ;; weight by frequency
+    (setq company-transformers '(company-sort-by-occurrence))
+
+    ;; Add yasnippet support for all company backends
+    ;; https://github.com/syl20bnr/spacemacs/pull/179
+    (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+
+    (defun company-mode/backend-with-yas (backend)
+      (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
+          backend
+        (append (if (consp backend) backend (list backend))
+                '(:with company-yasnippet))))
+
+    (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+    )
+
+(use-package company-flx
   :ensure t
   :config
-
-  ;; company mode
-  (require 'company)
-  (add-hook 'after-init-hook 'global-company-mode)
-
-  ;; company delay until suggestions are shown
-  (setq company-idle-delay 0.5)
-
-  ;; weight by frequency
-  (setq company-transformers '(company-sort-by-occurrence))
-
-  ;; Add yasnippet support for all company backends
-  ;; https://github.com/syl20bnr/spacemacs/pull/179
-  (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
-
-  (defun company-mode/backend-with-yas (backend)
-    (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
-        backend
-      (append (if (consp backend) backend (list backend))
-              '(:with company-yasnippet))))
-
-  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
-  )
+  (with-eval-after-load 'company
+    (company-flx-mode +1)))
 
 
 

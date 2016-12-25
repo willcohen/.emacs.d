@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-12-13 15:51:42 wcohen>
+# Time-stamp: <2016-12-25 16:08:59 wcohen>
 
 * Configuration
 ** About this file
@@ -1578,33 +1578,38 @@ Add yasnippet.
 Add company.
 
 #+begin_src emacs-lisp
-  (use-package company
+    (use-package company
+      :ensure t
+      :config
+
+      ;; company mode
+      (require 'company)
+      (add-hook 'after-init-hook 'global-company-mode)
+
+      ;; company delay until suggestions are shown
+      (setq company-idle-delay 0.5)
+
+      ;; weight by frequency
+      (setq company-transformers '(company-sort-by-occurrence))
+
+      ;; Add yasnippet support for all company backends
+      ;; https://github.com/syl20bnr/spacemacs/pull/179
+      (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+
+      (defun company-mode/backend-with-yas (backend)
+        (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
+            backend
+          (append (if (consp backend) backend (list backend))
+                  '(:with company-yasnippet))))
+
+      (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+      )
+
+  (use-package company-flx
     :ensure t
     :config
-
-    ;; company mode
-    (require 'company)
-    (add-hook 'after-init-hook 'global-company-mode)
-
-    ;; company delay until suggestions are shown
-    (setq company-idle-delay 0.5)
-
-    ;; weight by frequency
-    (setq company-transformers '(company-sort-by-occurrence))
-
-    ;; Add yasnippet support for all company backends
-    ;; https://github.com/syl20bnr/spacemacs/pull/179
-    (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
-
-    (defun company-mode/backend-with-yas (backend)
-      (if (or (not company-mode/enable-yas) (and (listp backend)    (member 'company-yasnippet backend)))
-          backend
-        (append (if (consp backend) backend (list backend))
-                '(:with company-yasnippet))))
-
-    (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
-    )
-
+    (with-eval-after-load 'company
+      (company-flx-mode +1)))
 
 #+end_src
 
