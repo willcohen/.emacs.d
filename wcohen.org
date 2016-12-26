@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-12-25 16:08:59 wcohen>
+# Time-stamp: <2016-12-25 20:07:28 wcohen>
 
 * Configuration
 ** About this file
@@ -1211,7 +1211,8 @@ Be sure that Leiningen is installed.
 
 #+begin_src emacs-lisp
   (use-package cider
-    :ensure t)
+    :ensure t
+    :diminish cider-mode)
 #+end_src
 
 *** Which-key
@@ -1332,7 +1333,8 @@ Activate projectile.
 
 #+begin_src emacs-lisp
   (use-package projectile
-    :ensure t)
+    :ensure t
+    :diminish projectile-mode)
 
   (projectile-global-mode)
 #+end_src
@@ -1739,6 +1741,16 @@ Be sure to install =kramdown=, using =gem install kramdown=.
            ("\\.markdown\\'" . markdown-mode))
     :init (setq markdown-command "kramdown"))
 
+#+end_src
+
+*** reStructuredText
+
+Disable electric-indent-mode because of bugs. From [[http://emacs.stackexchange.com/questions/14039/list-indentation-problem-in-rst-mode][stackexchange]].
+
+#+begin_src emacs-lisp
+  (defun my-rst-mode-hook ()
+    (electric-indent-local-mode -1))
+  (add-hook 'rst-mode-hook #'my-rst-mode-hook)
 #+end_src
 
 *** YAML

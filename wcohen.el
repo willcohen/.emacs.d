@@ -188,7 +188,7 @@ locate PACKAGE."
     (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
   "LANG" "LC_CTYPE" "SUPERNORMAL_DBHOST" "SUPERNORMAL_DBPORT"
   "SUPERNORMAL_DBNAME" "SUPERNORMAL_USERNAME"
-  "SUPERNORMAL_POSTGRES_USER" "SUPERNORMAL_POSTGRES_PASS"))
+  "SUPERNORMAL_POSTGRES_USER" "SUPERNORMAL_POSTGRES_PASS" "SUPERNORMAL_REMOTEHOST"))
       (add-to-list 'exec-path-from-shell-variables var))))
 
 
@@ -880,7 +880,8 @@ With arg N, insert N newlines."
 '(load-library "sql-indent")
 
 (use-package cider
-  :ensure t)
+  :ensure t
+  :diminish cider-mode)
 
 (use-package which-key
   :ensure t)
@@ -956,7 +957,8 @@ With arg N, insert N newlines."
   )
 
 (use-package projectile
-  :ensure t)
+  :ensure t
+  :diminish projectile-mode)
 
 (projectile-global-mode)
 
@@ -1210,6 +1212,10 @@ With arg N, insert N newlines."
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "kramdown"))
+
+(defun my-rst-mode-hook ()
+  (electric-indent-local-mode -1))
+(add-hook 'rst-mode-hook #'my-rst-mode-hook)
 
 (use-package yaml-mode
   :ensure t
