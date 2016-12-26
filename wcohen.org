@@ -329,7 +329,7 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-exec-path.el]].
       (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
     "LANG" "LC_CTYPE" "SUPERNORMAL_DBHOST" "SUPERNORMAL_DBPORT"
     "SUPERNORMAL_DBNAME" "SUPERNORMAL_USERNAME"
-    "SUPERNORMAL_POSTGRES_USER" "SUPERNORMAL_POSTGRES_PASS"))
+    "SUPERNORMAL_POSTGRES_USER" "SUPERNORMAL_POSTGRES_PASS" "SUPERNORMAL_REMOTEHOST"))
         (add-to-list 'exec-path-from-shell-variables var))))
 
 
