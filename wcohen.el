@@ -793,65 +793,13 @@ With arg N, insert N newlines."
 
 
 
-(use-package guide-key
-  :ensure t
-  :config
-  (setq guide-key/guide-key-sequence '("C-x" "C-c" "C-x 4" "C-x 5" "C-c ;" "C-c ; f" "C-c ' f" "C-x n" "C-x C-r" "C-x r"))
-  (guide-key-mode 1)
-  (diminish 'guide-key-mode)
-  )
-
 (blink-cursor-mode 0)
 
-(use-package paredit
+(use-package smartparens
   :ensure t
   :config
-  (autoload 'enable-paredit-mode "paredit")
-
-  (defun maybe-map-paredit-newline ()
-    (unless (or (memq major-mode '(inferior-emacs-lisp-mode cider-repl-mode))
-                (minibufferp))
-      (local-set-key (kbd "RET") 'paredit-newline)))
-
-  (add-hook 'paredit-mode-hook 'maybe-map-paredit-newline)
-  (diminish 'paredit-mode " Par")
-  (dolist (binding (list (kbd "C-<left>") (kbd "C-<right>")
-                         (kbd "C-M-<left>") (kbd "C-M-<right>")))
-    (define-key paredit-mode-map binding nil))
-
-  ;; Disable kill-sentence, which is easily confused with the kill-sexp
-  ;; binding, but doesn't preserve sexp structure
-  (define-key paredit-mode-map [remap kill-sentence] nil)
-  (define-key paredit-mode-map [remap backward-kill-sentence] nil)
-
-  ;; Allow my global binding of M-? to work when paredit is active
-  (define-key paredit-mode-map (kbd "M-?") nil)
-
-  (suspend-mode-during-cua-rect-selection 'paredit-mode)
-
-  ;; Use paredit in the minibuffer
-  ;; TODO: break out into separate package
-  ;; http://emacsredux.com/blog/2013/04/18/evaluate-emacs-lisp-in-the-minibuffer/
-  (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
-
-  (defvar paredit-minibuffer-commands '(eval-expression
-                                        pp-eval-expression
-                                        eval-expression-with-eldoc
-                                        ibuffer-do-eval
-                                        ibuffer-do-view-and-eval)
-    "Interactive commands for which paredit should be enabled in the minibuffer.")
-
-  (defun conditionally-enable-paredit-mode ()
-    "Enable paredit during lisp-related minibuffer commands."
-    (if (memq this-command paredit-minibuffer-commands)
-        (enable-paredit-mode)))
-  )
-
-(use-package paredit-everywhere
-  :ensure t
-  :config
-  (add-hook 'prog-mode-hook 'paredit-everywhere-mode)
-  (add-hook 'css-mode-hook 'paredit-everywhere-mode)
+  (require 'smartparens-config)
+  (smartparens-global-mode t)
   )
 
 (when (not *is-windows*)
@@ -882,9 +830,6 @@ With arg N, insert N newlines."
 (use-package cider
   :ensure t
   :diminish cider-mode)
-
-(use-package which-key
-  :ensure t)
 
 (require 'tramp)
 (when *configured-windows*
@@ -967,10 +912,62 @@ With arg N, insert N newlines."
 
 (counsel-projectile-on)
 
-(use-package elpy
+(use-package anaconda-mode
+  :defer t
   :ensure t
   :config
-  (elpy-enable))
+  (add-hook 'python-mode-hook 'anaconda-mode)
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+  (add-hook 'python-mode-hook 'semantic-mode)
+  )
+
+(use-package company-anaconda
+  :defer t
+  :ensure t
+  :config
+  (eval-after-load "company"
+    '(add-to-list 'company-backends 'company-anaconda)))
+
+(use-package eldoc
+  :ensure t
+  :config
+  (eldoc-mode))
+
+(use-package pip-requirements
+  :ensure t)
+
+(use-package py-isort
+  :defer t
+  :ensure t
+  :config
+  (require 'py-isort)
+  (add-hook 'before-save-hook 'py-isort-before-save)
+  )
+
+(use-package pyenv-mode
+  :ensure t
+  :config
+  (require 'pyenv-mode)
+  (defun projectile-pyenv-mode-set ()
+    "Set pyenv version matching project name."
+    (let ((project (projectile-project-name)))
+      (if (member project (pyenv-mode-versions))
+          (pyenv-mode-set project)
+        (pyenv-mode-unset))))
+  (add-hook 'projectile-switch-project-hook 'projectile-pyenv-mode-set)
+  )
+
+(use-package pyvenv
+  :ensure t
+  )
+
+(use-package yapfify
+  :ensure t
+  :config
+  (add-hook 'python-mode-hook 'yapf-mode))
+
+(use-package pony-mode
+  :ensure t)
 
 (use-package ob-ipython
   :ensure t
@@ -1453,6 +1450,12 @@ and subsequent lines as the task note."
 
 (maybe-require-package 'github-clone)
 (maybe-require-package 'magit-gh-pulls)
+
+(use-package which-key :ensure t
+  :init
+  (which-key-mode)
+  :diminish which-key-mode
+  )
 
 (require-package 'discover)
 (require 'discover)

@@ -1,7 +1,7 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: Will Cohen
 #+OPTIONS: toc:4 h:4
-# Time-stamp: <2016-12-25 20:07:28 wcohen>
+# Time-stamp: <2016-12-28 15:53:30 wcohen>
 
 * Configuration
 ** About this file
@@ -1086,13 +1086,6 @@ Cut/copy the current line if no region is active
 
   
 
-  (use-package guide-key
-    :ensure t
-    :config
-    (setq guide-key/guide-key-sequence '("C-x" "C-c" "C-x 4" "C-x 5" "C-c ;" "C-c ; f" "C-c ' f" "C-x n" "C-x C-r" "C-x r"))
-    (guide-key-mode 1)
-    (diminish 'guide-key-mode)
-    )
 #+end_src
 
 New settings
@@ -1101,65 +1094,14 @@ New settings
   (blink-cursor-mode 0)
 #+end_src
 
-*** Paredit
-
-From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-paredit.el]].
+*** Smartparens
 
 #+begin_src emacs-lisp
-  (use-package paredit
+  (use-package smartparens
     :ensure t
     :config
-    (autoload 'enable-paredit-mode "paredit")
-
-    (defun maybe-map-paredit-newline ()
-      (unless (or (memq major-mode '(inferior-emacs-lisp-mode cider-repl-mode))
-                  (minibufferp))
-        (local-set-key (kbd "RET") 'paredit-newline)))
-
-    (add-hook 'paredit-mode-hook 'maybe-map-paredit-newline)
-    (diminish 'paredit-mode " Par")
-    (dolist (binding (list (kbd "C-<left>") (kbd "C-<right>")
-                           (kbd "C-M-<left>") (kbd "C-M-<right>")))
-      (define-key paredit-mode-map binding nil))
-
-    ;; Disable kill-sentence, which is easily confused with the kill-sexp
-    ;; binding, but doesn't preserve sexp structure
-    (define-key paredit-mode-map [remap kill-sentence] nil)
-    (define-key paredit-mode-map [remap backward-kill-sentence] nil)
-
-    ;; Allow my global binding of M-? to work when paredit is active
-    (define-key paredit-mode-map (kbd "M-?") nil)
-
-    (suspend-mode-during-cua-rect-selection 'paredit-mode)
-
-    ;; Use paredit in the minibuffer
-    ;; TODO: break out into separate package
-    ;; http://emacsredux.com/blog/2013/04/18/evaluate-emacs-lisp-in-the-minibuffer/
-    (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
-
-    (defvar paredit-minibuffer-commands '(eval-expression
-                                          pp-eval-expression
-                                          eval-expression-with-eldoc
-                                          ibuffer-do-eval
-                                          ibuffer-do-view-and-eval)
-      "Interactive commands for which paredit should be enabled in the minibuffer.")
-
-    (defun conditionally-enable-paredit-mode ()
-      "Enable paredit during lisp-related minibuffer commands."
-      (if (memq this-command paredit-minibuffer-commands)
-          (enable-paredit-mode)))
-    )
-
-#+end_src
-
-Enable some handy paredit functions in all prog modes
-
-#+begin_src emacs-lisp
-  (use-package paredit-everywhere
-    :ensure t
-    :config
-    (add-hook 'prog-mode-hook 'paredit-everywhere-mode)
-    (add-hook 'css-mode-hook 'paredit-everywhere-mode)
+    (require 'smartparens-config)
+    (smartparens-global-mode t)
     )
 #+end_src
 
@@ -1213,13 +1155,6 @@ Be sure that Leiningen is installed.
   (use-package cider
     :ensure t
     :diminish cider-mode)
-#+end_src
-
-*** Which-key
-
-#+begin_src emacs-lisp
-  (use-package which-key
-    :ensure t)
 #+end_src
 
 *** TRAMP for remote editing
@@ -1350,20 +1285,88 @@ Add projectile to counsel.
 
 *** Python
 
-Use elpy. In addition to the package for emacs, need to install =jedi=
-and =flake8= using =pip=.
+Use anaconda.
 
-If using [[http://continuum.io/downloads][Anaconda]] for Windows, elpy should work. However, I cannot
-currently get the different =conda= virtual environments to correlate
-with elpy, so choose the default Anaconda version for python2 or
-python3 depending on which you'd like to be able to integrate with
-elpy. Also, install using =conda install= instead of =pip=.
+**** Getting Python onto a Mac
+
+Install pyenv: =brew install pyenv=.
+
+Install pyenv-virtualenv: =brew install pyenv-virtualenv=.
+
+Restart shell: =exec "$SHELL"=.
+
+**** Installing a version of python using these tools
+
+=pyenv install 3.6.0=
+=pyenv global 3.6.0=
+
+See [[https://github.com/yyuu/pyenv-virtualenvwrapper][github]].
+
+**** Configuration
+
+Be sure to install =jedi=, =flake8=, =isort=, and =yapf=.
 
 #+begin_src emacs-lisp
-  (use-package elpy
+  (use-package anaconda-mode
+    :defer t
     :ensure t
     :config
-    (elpy-enable))
+    (add-hook 'python-mode-hook 'anaconda-mode)
+    (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+    (add-hook 'python-mode-hook 'semantic-mode)
+    )
+
+  (use-package company-anaconda
+    :defer t
+    :ensure t
+    :config
+    (eval-after-load "company"
+      '(add-to-list 'company-backends 'company-anaconda)))
+
+  (use-package eldoc
+    :ensure t
+    :config
+    (eldoc-mode))
+
+  (use-package pip-requirements
+    :ensure t)
+
+  (use-package py-isort
+    :defer t
+    :ensure t
+    :config
+    (require 'py-isort)
+    (add-hook 'before-save-hook 'py-isort-before-save)
+    )
+
+  (use-package pyenv-mode
+    :ensure t
+    :config
+    (require 'pyenv-mode)
+    (defun projectile-pyenv-mode-set ()
+      "Set pyenv version matching project name."
+      (let ((project (projectile-project-name)))
+        (if (member project (pyenv-mode-versions))
+            (pyenv-mode-set project)
+          (pyenv-mode-unset))))
+    (add-hook 'projectile-switch-project-hook 'projectile-pyenv-mode-set)
+    )
+
+  (use-package pyvenv
+    :ensure t
+    )
+
+  (use-package yapfify
+    :ensure t
+    :config
+    (add-hook 'python-mode-hook 'yapf-mode))
+#+end_src
+
+**** Django
+
+#+begin_src emacs-lisp
+  (use-package pony-mode
+    :ensure t)
 #+end_src
 
 **** Jupyter
@@ -2151,6 +2154,16 @@ From [[https://github.com/purcell/emacs.d/blob/master/lisp/init-github.el]].
   (maybe-require-package 'github-clone)
   (maybe-require-package 'magit-gh-pulls)
 
+#+end_src
+
+*** Which-key
+
+#+begin_src emacs-lisp
+  (use-package which-key :ensure t
+    :init
+    (which-key-mode)
+    :diminish which-key-mode
+    )
 #+end_src
 
 *** Discover mode
